@@ -1,5 +1,6 @@
 package com.tretiak.portal.user;
 
+import com.tretiak.portal.shared.GenericResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +47,14 @@ public class UserControllerTest {
         testRestTemplate.postForEntity(API_1_0_USERS, user, Object.class);
 
         assertThat(userRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    public void postUser_whenUserIsValid_receiveSuccessMessage(){
+        User user = createValidUser();
+
+        ResponseEntity<GenericResponse> response = testRestTemplate.postForEntity(API_1_0_USERS, user, GenericResponse.class);
+        assertThat(response.getBody().getMessage()).isNotNull();
     }
 
     private User createValidUser() {
