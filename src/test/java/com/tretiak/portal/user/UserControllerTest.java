@@ -1,5 +1,6 @@
 package com.tretiak.portal.user;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +23,36 @@ public class UserControllerTest {
     @Autowired
     private TestRestTemplate testRestTemplate;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Before
+    public void cleanup(){
+        userRepository.deleteAll();
+    }
+
     @Test
     public void postUser_whenUserIsValid_receiveOk(){
+        User user = createValidUser();
+
+        ResponseEntity<Object> response = testRestTemplate.postForEntity(API_1_0_USERS, user, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void postUser_whenUserIsValid_userSavedTODatabase(){
+        User user = createValidUser();
+
+        testRestTemplate.postForEntity(API_1_0_USERS, user, Object.class);
+
+        assertThat(userRepository.count()).isEqualTo(1);
+    }
+
+    private User createValidUser() {
         User user = new User();
         user.setUsername("test-user");
         user.setDisplayName("test-display");
         user.setPassword("P4ssword");
-
-        ResponseEntity<Object> response = testRestTemplate.postForEntity(API_1_0_USERS, user, Object.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        return user;
     }
 }
