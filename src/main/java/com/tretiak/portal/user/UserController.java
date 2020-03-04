@@ -1,11 +1,17 @@
 package com.tretiak.portal.user;
 
+import com.tretiak.portal.error.ApiError;
 import com.tretiak.portal.shared.GenericResponse;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class UserController {
@@ -20,5 +26,19 @@ public class UserController {
     GenericResponse createUser(@Valid @RequestBody User user){
         userService.save(user);
         return new GenericResponse("User saved");
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    ApiError handleValidationException(MethodArgumentNotValidException exception, HttpServletRequest request){
+        ApiError apiError
+                = new ApiError(HttpStatus.BAD_REQUEST.value(), "Validation error", request.getServletPath());
+        BindingResult result = exception.getBindingResult();
+        Map<String, String> validationErrors = new HashMap<>();
+        for (FieldError fieldError: result.getFieldErrors()){
+            validationErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
+        }
+        apiError.setValidationErrors(validationErrors);
+        return apiError;
     }
 }
