@@ -1,5 +1,6 @@
 package com.tretiak.portal.user;
 
+import com.tretiak.portal.error.ApiError;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,25 @@ public class LoginControllerTest {
         authenticate();
         ResponseEntity<Object> response = login(null, Object.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void postLogin_withoutUserCredential_receiveApiError(){
+        ResponseEntity<ApiError> response = login(null, ApiError.class);
+        assertThat(response.getBody().getUrl()).isEqualTo(API_1_0_LOGIN);
+    }
+
+    @Test
+    public void postLogin_withoutUserCredential_receiveApiErrorWithoutValidationErrors(){
+        ResponseEntity<String> response = login(null, String.class);
+        assertThat(response.getBody().contains("validationErrors")).isFalse();
+    }
+
+    @Test
+    public void postLogin_withoutUserCredential_receiveUnauthorizedWithoutWWWAuthenticateHeader(){
+        authenticate();
+        ResponseEntity<Object> response = login(null, Object.class);
+        assertThat(response.getHeaders().containsKey("WWW-Authenticate")).isFalse();
     }
 
     private void authenticate() {

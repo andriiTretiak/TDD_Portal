@@ -1,5 +1,6 @@
 package com.tretiak.portal.error;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,7 @@ import java.util.Map;
 
 @Data
 @NoArgsConstructor
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class ApiError {
     private long timestamp = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
     private int status;
