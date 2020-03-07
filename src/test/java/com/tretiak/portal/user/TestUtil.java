@@ -1,12 +1,13 @@
 package com.tretiak.portal.user;
 
-public class TestUtil {
+class TestUtil {
 
-    public static User createValidUser() {
+    static User createValidUser() {
         User user = new User();
         user.setUsername("test-user");
         user.setDisplayName("test-display");
         user.setPassword("P4ssword");
+        user.setImage("profile-image.png");
         return user;
     }
 }
