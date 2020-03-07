@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.tretiak.portal.user.TestUtil.createValidUser;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -206,13 +207,5 @@ public class UserControllerTest {
 
     private <T>ResponseEntity<T> postSignUp(Object request, Class<T> response){
         return testRestTemplate.postForEntity(API_1_0_USERS, request, response);
-    }
-
-    private User createValidUser() {
-        User user = new User();
-        user.setUsername("test-user");
-        user.setDisplayName("test-display");
-        user.setPassword("P4ssword");
-        return user;
     }
 }

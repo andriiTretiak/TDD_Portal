@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static com.tretiak.portal.user.TestUtil.createValidUser;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
@@ -32,13 +33,5 @@ public class UserRepositoryTest {
     public void findByUsername_whenUserDoesNotExists_returnNull(){
         User inDb = userRepository.findByUsername("nonexistingusername");
         assertThat(inDb).isNull();
-    }
-
-    private User createValidUser() {
-        User user = new User();
-        user.setUsername("test-user");
-        user.setDisplayName("test-display");
-        user.setPassword("P4ssword");
-        return user;
     }
 }
