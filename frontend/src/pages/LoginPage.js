@@ -2,6 +2,26 @@ import React from "react";
 import Input from "../components/Input";
 
 export class LoginPage extends React.Component{
+
+    state={
+        username: '',
+        password: ''
+    };
+
+    onChangeUsername = (event) =>{
+        const value = event.target.value;
+        this.setState({
+            username: value
+        });
+    };
+
+    onChangePassword = (event) => {
+        const value = event.target.value;
+        this.setState({
+            password: value
+        });
+    };
+
     render() {
         return (
             <div className="container">
@@ -10,6 +30,8 @@ export class LoginPage extends React.Component{
                     <Input
                         label = "Username"
                         placeholder="Your username"
+                        value={this.state.username}
+                        onChange={this.onChangeUsername}
                     />
                 </div>
                 <div className="col-12 mb-3">
@@ -17,6 +39,8 @@ export class LoginPage extends React.Component{
                         label = "Password"
                         placeholder="Your password"
                         type="password"
+                        value={this.state.password}
+                        onChange={this.onChangePassword}
                     />
                 </div>
                 <div className="text-center">
