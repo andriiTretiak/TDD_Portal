@@ -1,15 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import {HashRouter} from 'react-router-dom';
 import * as serviceWorker from './serviceWorker';
-import {LoginPage} from "./pages/LoginPage";
+import App from './containers/App';
 import * as apiCalls from "./api/apiCalls";
 
 const actions ={
     postLogin: apiCalls.login
 };
 
-ReactDOM.render(<LoginPage actions={actions}/>, document.getElementById('root'));
+ReactDOM.render(
+    <HashRouter>
+        <App/>
+    </HashRouter>
+    , document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
