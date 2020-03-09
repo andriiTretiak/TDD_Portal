@@ -1,7 +1,7 @@
 
 const initialState = () => {
     return {
-        id:0,
+        id: 0,
         username: '',
         displayName: '',
         image: '',

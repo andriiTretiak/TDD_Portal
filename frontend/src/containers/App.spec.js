@@ -2,14 +2,20 @@ import React from "react";
 import {fireEvent, render} from "@testing-library/react";
 import {MemoryRouter} from 'react-router-dom';
 import App from "./App";
+import {Provider} from 'react-redux';
+import {createStore} from 'redux';
+import authReducer from '../redux/authReducer';
 
-const setup = (path) => {
+const setup = path => {
+    const store = createStore(authReducer);
     return render(
-        <MemoryRouter initialEntries={[path]}>
-            <App/>
-        </MemoryRouter>
-    )
-};
+        <Provider store={store}>
+            <MemoryRouter initialEntries={[path]}>
+                <App />
+            </MemoryRouter>
+        </Provider>
+    );
+}
 
 describe('App', () => {
     it('displays HomePage when url is /', () => {
@@ -18,19 +24,18 @@ describe('App', () => {
     });
     it('displays LoginPage when url is /login', () => {
         const { container } = setup('/login');
-        const header = container.querySelector('h1');
-        expect(header).toHaveTextContent('Login');
+        expect(container.querySelector('h1')).toHaveTextContent('Login');
     });
     it('displays only LoginPage when url is /login', () => {
         const { queryByTestId } = setup('/login');
-        expect(queryByTestId('homepage')).not.toBeInTheDocument();
+        const homepageDiv = queryByTestId('homepage');
+        expect(homepageDiv).not.toBeInTheDocument();
     });
     it('displays UserSignupPage when url is /signup', () => {
         const { container } = setup('/signup');
-        const header = container.querySelector('h1');
-        expect(header).toHaveTextContent('Sign Up');
+        expect(container.querySelector('h1')).toHaveTextContent('Sign Up');
     });
-    it('displays UserPage when url is other then /, /login, /signup', () => {
+    it('displays userpage when path is other than /, /login or /signup', () => {
         const { queryByTestId } = setup('/user1');
         expect(queryByTestId('userpage')).toBeInTheDocument();
     });
@@ -49,27 +54,27 @@ describe('App', () => {
         const navigation = container.querySelector('nav');
         expect(navigation).toBeInTheDocument();
     });
-    it('displays topBar when url is /user1', () => {
+    it('displays topBar when path is other than /, /login or /signup', () => {
         const { container } = setup('/user1');
         const navigation = container.querySelector('nav');
         expect(navigation).toBeInTheDocument();
     });
-    it('shows the UserSignupPager when clicking signup', () => {
-        const { queryByText, container } = setup('/');
-        const signupLink = queryByText('Sign Up');
+    it('shows UserSignupPage when clicking signup', () => {
+        const { container, queryByText } = setup('/');
+        const signupLink = queryByText('Sign up');
         fireEvent.click(signupLink);
         const header = container.querySelector('h1');
         expect(header).toHaveTextContent('Sign Up');
     });
-    it('shows the LoginPager when clicking login', () => {
-        const { queryByText, container } = setup('/');
+    it('show LoginPage when clicking login', () => {
+        const { container, queryByText } = setup('/');
         const loginLink = queryByText('Login');
         fireEvent.click(loginLink);
         const header = container.querySelector('h1');
         expect(header).toHaveTextContent('Login');
     });
-    it('shows the HomePage when clicking the logo', () => {
-        const { queryByTestId, container } = setup('/login');
+    it('show HomePage when clicking the logo', () => {
+        const { container, queryByTestId } = setup('/login');
         const logo = container.querySelector('img');
         fireEvent.click(logo);
         expect(queryByTestId('homepage')).toBeInTheDocument();
