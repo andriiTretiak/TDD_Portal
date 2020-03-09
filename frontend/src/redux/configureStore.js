@@ -1,6 +1,7 @@
 import {applyMiddleware, createStore} from 'redux';
 import thunk from 'redux-thunk';
 import logger from 'redux-logger';
+import * as apiCalls from '../api/apiCalls';
 
 import authReducer from './authReducer';
 
@@ -20,6 +21,7 @@ export default (addLogger = true) => {
     if(localStorageData){
         try{
             persistedState =JSON.parse(localStorageData);
+            apiCalls.setAuthorizationHeader(persistedState);
         } catch (error) {
 
         }
@@ -31,6 +33,7 @@ export default (addLogger = true) => {
     const store = createStore(authReducer, persistedState, applyMiddleware(...middlewares));
     store.subscribe(() =>{
         localStorage.setItem('portal-auth', JSON.stringify(store.getState()));
+        apiCalls.setAuthorizationHeader(store.getState());
     });
     return store;
 }

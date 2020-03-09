@@ -7,7 +7,11 @@ import axios from 'axios';
 import App from './App';
 import configureStore from '../redux/configureStore';
 
-beforeEach(() => localStorage.clear());
+
+beforeEach(() => {
+    localStorage.clear();
+    delete axios.defaults.headers.common['Authorization'];
+});
 
 const setup = path => {
     const store = configureStore(false);
@@ -136,7 +140,6 @@ describe('App', () => {
         const myProfileLink = await waitForElement(() => queryByText('Profile'));
         expect(myProfileLink).toBeInTheDocument();
     });
-
     it('saves logged in user data to localStorage after login success', async () => {
         const { queryByPlaceholderText, container, queryByText } = setup('/login');
         const userNameInput = queryByPlaceholderText('Your username');
@@ -176,5 +179,27 @@ describe('App', () => {
         const {queryByText} = setup('/');
         const myProfileLink = queryByText('Profile');
         expect(myProfileLink).toBeInTheDocument();
+    });
+    it('sets axios authorization with base64 encoded user credentials after login success', async () => {
+        const { queryByPlaceholderText, container, queryByText } = setup('/login');
+        const userNameInput = queryByPlaceholderText('Your username');
+        const passwordInput = queryByPlaceholderText('Your password');
+        fireEvent.change(userNameInput, changeEvent('user1'));
+        fireEvent.change(passwordInput, changeEvent('P4ssword'));
+        const button = container.querySelector('button');
+        axios.post = jest.fn().mockResolvedValue({
+            data: {
+                id: 1,
+                username: 'user1',
+                displayName: 'display1',
+                image: 'profile1.png',
+            }
+        });
+        fireEvent.click(button);
+        await waitForElement(() => queryByText('Profile'));
+        const axiosAuthorization = axios.defaults.headers.common['Authorization'];
+        const encoded = btoa('user1:P4ssword');
+        const expectedAuthorization = `Basic ${encoded}`;
+        expect(axiosAuthorization).toBe(expectedAuthorization);
     });
 });

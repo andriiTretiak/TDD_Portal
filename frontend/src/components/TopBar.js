@@ -49,7 +49,7 @@ export class TopBar extends Component {
                 <div className="wontainer">
                     <nav className="navbar navbar-light navbar-expand">
                         <Link to="/" className="navbar-brand">
-                            <img src={logo} width="60" alt="Hoaxify" /> Hoaxify
+                            <img src={logo} width="60" alt="Portal" /> Inner Portal
                         </Link>
                         {links}
                     </nav>
