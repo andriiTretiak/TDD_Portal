@@ -2,6 +2,7 @@ package com.tretiak.portal.user;
 
 import com.tretiak.portal.error.ApiError;
 import com.tretiak.portal.shared.GenericResponse;
+import com.tretiak.portal.user.vm.UserVM;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -31,8 +32,8 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    Page<?> getUsers(){
-        return userService.getUsers();
+    Page<UserVM> getUsers(){
+        return userService.getUsers().map(UserVM::new);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
