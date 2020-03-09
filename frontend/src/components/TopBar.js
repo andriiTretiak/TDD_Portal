@@ -4,6 +4,12 @@ import {Link} from 'react-router-dom';
 import {connect} from 'react-redux';
 
 export class TopBar extends React.Component {
+    onClickLogout = () => {
+        const action = {
+            type: 'LOGOUT-SUCCESS',
+        };
+        this.props.dispatch(action);
+    }
     render() {
         const { user } = this.props;
         const { id, username, displayName, password, image, isLoggedIn } = user;
@@ -31,9 +37,9 @@ export class TopBar extends React.Component {
                         </Link>
                     </li>
                     <li className="nav-item">
-                        <Link to="/logout" className="nav-link">
+                        <li className="nav-item nav-link" onClick={this.onClickLogout} style={{cursor: 'pointer'}}>
                             Logout
-                        </Link>
+                        </li>
                     </li>
                 </ul>
             );

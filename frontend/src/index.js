@@ -5,10 +5,20 @@ import {HashRouter} from 'react-router-dom';
 import * as serviceWorker from './serviceWorker';
 import App from './containers/App';
 import {Provider} from 'react-redux';
-import {createStore} from 'redux';
-import authReducer from "./redux/authReducer";
+import {applyMiddleware, createStore} from 'redux';
+import logger from 'redux-logger';
+import authReducer from './redux/authReducer';
 
-const store = createStore(authReducer);
+const loggedInState = {
+    id: 1,
+    username: 'user1',
+    displayName: 'display1',
+    image: 'image1',
+    password: 'P4ssword',
+    isLoggedIn: true,
+};
+
+const store = createStore(authReducer, loggedInState, applyMiddleware(logger));
 
 ReactDOM.render(
     <Provider store={store}>
