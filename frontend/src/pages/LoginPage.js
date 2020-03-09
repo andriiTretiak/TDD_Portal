@@ -1,103 +1,104 @@
-import React from "react";
-import Input from "../components/Input";
-import ButtonWithProgress from "../components/ButtonWithProgress";
+import React, {Component} from 'react'
+import {connect} from 'react-redux';
 
-export class LoginPage extends React.Component{
+import Input from '../components/Input';
+import ButtonWithProgress from '../components/ButtonWithProgress';
+import * as authActions from '../redux/authActions';
 
-    state={
-        username: '',
-        password: '',
-        apiError: undefined,
-        pendingApiCall: false
-    };
+export class LoginPage extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            username: '',
+            password: '',
+            apiError: null,
+            pendingApiCall: false,
+        };
+    }
 
-    onChangeUsername = (event) =>{
-        const value = event.target.value;
+    onChangeHandler = (name, event) => {
         this.setState({
-            username: value,
-            apiError: undefined
-        });
-    };
-
-    onChangePassword = (event) => {
-        const value = event.target.value;
-        this.setState({
-            password: value,
-            apiError: undefined
+            [name]: event.target.value,
+            apiError: null
         });
     };
 
     onClickLogin = () => {
-        const body = {
+        const userObject = {
             username: this.state.username,
-            password: this.state.password
+            password: this.state.password,
         };
         this.setState({pendingApiCall: true});
-        this.props.actions.postLogin(body)
+        this.props.actions.postLogin(userObject)
             .then(response => {
                 this.setState({pendingApiCall: false}, () => {
                     this.props.history.push('/');
                 });
             })
             .catch(error => {
-                if(error.response) {
-                    this.setState({
-                        apiError: error.response.data.message,
-                        pendingApiCall: false
-                    })
-                }
+                this.setState({pendingApiCall: false});
+                if (error.response)
+                    this.setState({apiError: error.response.data.message})
             });
     };
 
     render() {
-        let disableSubmit = false;
-        if(this.state.username === '' || this.state.password === ''){
-            disableSubmit = true;
-        }
+        const {username, password, apiError} = this.state;
+        const disableButton = username === '' || password === '';
         return (
             <div className="container">
                 <h1 className="text-center">Login</h1>
                 <div className="col-12 mb-3">
                     <Input
-                        label = "Username"
+                        label="Username"
+                        value={username}
+                        onChange={e => this.onChangeHandler("username", e)}
                         placeholder="Your username"
-                        value={this.state.username}
-                        onChange={this.onChangeUsername}
                     />
                 </div>
                 <div className="col-12 mb-3">
                     <Input
-                        label = "Password"
-                        placeholder="Your password"
+                        label="Password"
                         type="password"
-                        value={this.state.password}
-                        onChange={this.onChangePassword}
+                        value={password}
+                        onChange={e => this.onChangeHandler("password", e)}
+                        placeholder="Your password"
                     />
                 </div>
-                {
-                    this.state.apiError && <div className="col-12 mb-3">
-                        <div className="alert alert-danger">
-                            {this.state.apiError}
+                {apiError && (
+                    <div className="col-12 mb-3">
+                        <div className="alert alert-danger" role="alert">
+                            {apiError}
                         </div>
                     </div>
-                }
+                )}
                 <div className="text-center">
                     <ButtonWithProgress
                         onClick={this.onClickLogin}
-                        disabled={disableSubmit || this.state.pendingApiCall}
+                        disabled={disableButton || this.state.pendingApiCall}
                         pendingApiCall={this.state.pendingApiCall}
                         text="Login"
                     />
                 </div>
             </div>
-        )
+        );
     }
 }
 
 LoginPage.defaultProps = {
     actions: {
-        postLogin: () => new Promise((resolve, reject) => resolve({}))
+        postLogin: () => new Promise((resolve, reject) => resolve({})),
+    },
+    dispatch: () => {
     }
 };
 
-export default LoginPage;
+const mapDispatchToProps = dispatch => {
+    return {
+        actions: {
+            postLogin: body => dispatch(authActions.loginHandler(body)),
+        }
+    }
+};
+
+export default connect(null, mapDispatchToProps)(LoginPage);

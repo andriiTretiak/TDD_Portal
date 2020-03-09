@@ -1,15 +1,17 @@
-import React from "react";
-import logo from '../assets/portal-logo.png';
+import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
 import {connect} from 'react-redux';
 
-export class TopBar extends React.Component {
+import logo from '../assets/portal-logo.png';
+
+export class TopBar extends Component {
     onClickLogout = () => {
         const action = {
-            type: 'LOGOUT-SUCCESS',
+            type: 'LOGOUT_SUCCESS',
         };
         this.props.dispatch(action);
-    }
+    };
+
     render() {
         const { user } = this.props;
         const { id, username, displayName, password, image, isLoggedIn } = user;
@@ -36,10 +38,8 @@ export class TopBar extends React.Component {
                             Profile
                         </Link>
                     </li>
-                    <li className="nav-item">
-                        <li className="nav-item nav-link" onClick={this.onClickLogout} style={{cursor: 'pointer'}}>
-                            Logout
-                        </li>
+                    <li className="nav-item nav-link" onClick={this.onClickLogout} style={{cursor: 'pointer'}}>
+                        Logout
                     </li>
                 </ul>
             );

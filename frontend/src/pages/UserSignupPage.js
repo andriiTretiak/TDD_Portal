@@ -1,69 +1,71 @@
-import React from "react";
-import Input from "../components/Input";
-import ButtonWithProgress from "../components/ButtonWithProgress";
+import React, {Component} from 'react';
 
-export class UserSignupPage extends React.Component {
+import Input from '../components/Input';
+import ButtonWithProgress from '../components/ButtonWithProgress';
+import {connect} from 'react-redux';
+import * as authActions from '../redux/authActions';
 
-    state = {
-        displayName: '',
-        username: '',
-        password: '',
-        passwordRepeat: '',
-        pendingApiCall: false,
-        errors: {},
-        passwordRepeatConfirmed: true
-    };
+export class UserSignupPage extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            displayName: '',
+            username: '',
+            password: '',
+            passwordRepeat: '',
+            pendingApiCall: false,
+            errors: {},
+            passwordRepeatConfirmed: undefined
+        };
 
-    onChangeDisplayName = (event) => {
-        const value = event.target.value;
+        this.onClickSignup = this.onClickSignup.bind(this);
+    }
+
+    onChangeHandler = (name, e) => {
+        const value = e.target.value;
         const errors = {...this.state.errors};
-        delete errors.displayName;
-        this.setState({displayName: value, errors});
-    };
-
-    onChangeUsername = (event) => {
-        const value = event.target.value;
-        const errors = {...this.state.errors};
-        delete errors.username;
-        this.setState({username: value, errors});
-    };
-
-    onChangePassword = (event) => {
-        const value = event.target.value;
-        const passwordRepeatConfirmed = this.state.passwordRepeat === value;
-        const errors = {...this.state.errors};
-        delete errors.password;
-        errors.passwordRepeat = passwordRepeatConfirmed ? '' : 'Does not match to password';
-        this.setState({password: value, passwordRepeatConfirmed, errors});
-    };
-
-    onChangePasswordRepeat = (event) => {
-        const value = event.target.value;
-        const passwordRepeatConfirmed = this.state.password === value;
-        const errors = {...this.state.errors};
-        errors.passwordRepeat = passwordRepeatConfirmed ? '' : 'Does not match to password';
-        this.setState({passwordRepeat: value, passwordRepeatConfirmed, errors});
+        delete errors[name];
+        this.setState({
+            [name]: value,
+            errors
+        }, () => {
+            if (name === "password") {
+                const passwordRepeatConfirmed = this.state.passwordRepeat === value;
+                const errors = {...this.state.errors};
+                errors.passwordRepeat = passwordRepeatConfirmed ?
+                    '' : 'Does not match to password';
+                this.setState({passwordRepeatConfirmed, errors});
+            } else if (name === "passwordRepeat") {
+                const passwordRepeatConfirmed = this.state.password === value;
+                const errors = {...this.state.errors};
+                errors.passwordRepeat = passwordRepeatConfirmed ?
+                    '' : 'Does not match to password';
+                this.setState({passwordRepeatConfirmed, errors});
+            }
+        });
     };
 
     onClickSignup = () => {
-        const user = {
-            displayName: this.state.displayName,
-            username: this.state.username,
-            password: this.state.password,
+        const {displayName, username, password} = this.state;
+        const userObject = {
+            username,
+            displayName,
+            password
         };
         this.setState({pendingApiCall: true});
-        this.props.actions.postSignup(user)
-            .then((response) => {
+        this.props.actions.postSignup(userObject)
+            .then(response => {
                 this.setState({pendingApiCall: false}, () => {
                     this.props.history.push('/');
                 });
-            }).catch((apiError) => {
-                let errors = {...this.state.errors};
-                if(apiError.response.data && apiError.response.data.validationErrors){
+            })
+            .catch(apiError => {
+                let errors = {...apiError};
+                if (apiError.response.data && apiError.response.data.validationErrors) {
                     errors = {...apiError.response.data.validationErrors};
                 }
-                this.setState({pendingApiCall: false, errors});
-        });
+                this.setState({pendingApiCall: false, errors: errors});
+            });
     };
 
     render() {
@@ -72,42 +74,44 @@ export class UserSignupPage extends React.Component {
                 <h1 className="text-center">Sign Up</h1>
                 <div className="col-12 mb-3">
                     <Input
-                        label="Display name"
+                        label="Your display name"
+                        type="text"
                         placeholder="Your display name"
                         value={this.state.displayName}
-                        onChange={this.onChangeDisplayName}
+                        onChange={(e) => this.onChangeHandler('displayName', e)}
                         hasError={this.state.errors.displayName && true}
                         error={this.state.errors.displayName}
                     />
                 </div>
                 <div className="col-12 mb-3">
                     <Input
-                        label="User name"
+                        label="Your username"
+                        type="text"
                         placeholder="Your username"
                         value={this.state.username}
-                        onChange={this.onChangeUsername}
+                        onChange={e => this.onChangeHandler('username', e)}
                         hasError={this.state.errors.username && true}
                         error={this.state.errors.username}
                     />
                 </div>
                 <div className="col-12 mb-3">
                     <Input
-                        label="Password"
-                        placeholder="Your password"
+                        label="Your password"
                         type="password"
+                        placeholder='Your password'
                         value={this.state.password}
-                        onChange={this.onChangePassword}
+                        onChange={e => this.onChangeHandler('password', e)}
                         hasError={this.state.errors.password && true}
                         error={this.state.errors.password}
                     />
                 </div>
                 <div className="col-12 mb-3">
                     <Input
-                        label="Password repeat"
-                        placeholder="Repeat your password"
+                        label="Repeat your password"
                         type="password"
+                        placeholder='Repeat your password'
                         value={this.state.passwordRepeat}
-                        onChange={this.onChangePasswordRepeat}
+                        onChange={e => this.onChangeHandler('passwordRepeat', e)}
                         hasError={this.state.errors.passwordRepeat && true}
                         error={this.state.errors.passwordRepeat}
                     />
@@ -117,7 +121,7 @@ export class UserSignupPage extends React.Component {
                         onClick={this.onClickSignup}
                         disabled={this.state.pendingApiCall || !this.state.passwordRepeatConfirmed}
                         pendingApiCall={this.state.pendingApiCall}
-                        text="Sign Up"
+                        text='Sign up'
                     />
                 </div>
             </div>
@@ -129,11 +133,19 @@ UserSignupPage.defaultProps = {
     actions: {
         postSignup: () => new Promise((resolve, reject) => {
             resolve({});
-        })
+        }),
     },
     history: {
-        push: () => {}
+        push: () => {
+        }
     }
 };
 
-export default UserSignupPage;
+const mapDispatchToProps = dispatch => {
+    return {
+        actions: {
+            postSignup: user => dispatch(authActions.signupHandler(user)),
+        }
+    }
+};
+export default connect(null, mapDispatchToProps)(UserSignupPage);
