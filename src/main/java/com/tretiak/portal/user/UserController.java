@@ -2,6 +2,7 @@ package com.tretiak.portal.user;
 
 import com.tretiak.portal.error.ApiError;
 import com.tretiak.portal.shared.GenericResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/api/1.0")
 public class UserController {
 
     private final UserService userService;
@@ -22,10 +24,15 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/api/1.0/users")
+    @PostMapping("/users")
     GenericResponse createUser(@Valid @RequestBody User user){
         userService.save(user);
         return new GenericResponse("User saved");
+    }
+
+    @GetMapping("/users")
+    Page<?> getUsers(){
+        return userService.getUsers();
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
