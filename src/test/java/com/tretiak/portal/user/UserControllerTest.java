@@ -235,11 +235,52 @@ public class UserControllerTest {
         assertThat(entity.containsKey("password")).isFalse();
     }
 
+    @Test
+    public void getUsers_whenPageIsRequestedFor3ItemsPerPageWhereTheDatabaseHas20Users_receive3Users(){
+        IntStream.rangeClosed(1,20).mapToObj(value -> "test-user-" + value)
+                .map(TestUtil::createValidUser)
+                .forEach(userRepository::save);
+        String path = API_1_0_USERS + "?page=0&size=3";
+        ResponseEntity<TestPage<Object>> response = getUsers(path, new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getContent().size()).isEqualTo(3);
+    }
+
+    @Test
+    public void getUsers_whenPageSizeNotProvided_receiveSizeAs10(){
+        ResponseEntity<TestPage<Object>> response = getUsers(new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getSize()).isEqualTo(10);
+    }
+
+    @Test
+    public void getUsers_whenPageSizeIsGreaterThan100_receiveSizeAs100(){
+        String path = API_1_0_USERS + "?size=500";
+        ResponseEntity<TestPage<Object>> response = getUsers(path, new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getSize()).isEqualTo(100);
+    }
+
+    @Test
+    public void getUsers_whenPageSizeIsNegative_receiveSizeAs10(){
+        String path = API_1_0_USERS + "?size=-5";
+        ResponseEntity<TestPage<Object>> response = getUsers(path, new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getSize()).isEqualTo(10);
+    }
+
+    @Test
+    public void getUsers_whenPageIsNegative_receiveFirstPage(){
+        String path = API_1_0_USERS + "?page=-5";
+        ResponseEntity<TestPage<Object>> response = getUsers(path, new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getNumber()).isEqualTo(0);
+    }
+
     private <T>ResponseEntity<T> postSignUp(Object request, Class<T> response){
         return testRestTemplate.postForEntity(API_1_0_USERS, request, response);
     }
 
     private <T>ResponseEntity<T> getUsers(ParameterizedTypeReference<T> responseType){
         return testRestTemplate.exchange(API_1_0_USERS, HttpMethod.GET, null, responseType);
+    }
+
+    private <T>ResponseEntity<T> getUsers(String path, ParameterizedTypeReference<T> responseType){
+        return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
     }
 }

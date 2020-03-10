@@ -1,7 +1,6 @@
 package com.tretiak.portal.user;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,8 +21,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    Page<User> getUsers() {
-        Pageable pageable = PageRequest.of(0, 10);
+    Page<User> getUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
     }
 }
