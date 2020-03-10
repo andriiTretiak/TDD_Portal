@@ -1,6 +1,7 @@
 package com.tretiak.portal.user;
 
 import com.tretiak.portal.error.ApiError;
+import com.tretiak.portal.shared.CurrentUser;
 import com.tretiak.portal.shared.GenericResponse;
 import com.tretiak.portal.user.vm.UserVM;
 import org.springframework.data.domain.Page;
@@ -33,8 +34,8 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    Page<UserVM> getUsers(Pageable pageable){
-        return userService.getUsers(pageable).map(UserVM::new);
+    Page<UserVM> getUsers(@CurrentUser User loggedUser, Pageable pageable){
+        return userService.getUsers(loggedUser, pageable).map(UserVM::new);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
