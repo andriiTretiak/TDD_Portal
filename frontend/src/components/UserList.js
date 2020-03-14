@@ -1,8 +1,9 @@
 import React from 'react';
 import * as apiCalled from '../api/apiCalls';
+import UserListItem from "./UserListItem";
 
-export class UserList extends React.Component{
-    
+export class UserList extends React.Component {
+
     state = {
         page: {
             content: [],
@@ -21,17 +22,12 @@ export class UserList extends React.Component{
     }
 
     render() {
-        return(
+        return (
             <div className="card">
                 <h3 className='card-title m-auto'>Users</h3>
                 <div className="list-group list-group-flush" data-testid="usergroup">
                     {this.state.page.content.map((user) => {
-                        return (<div
-                            key={user.username}
-                            className="list-group-item list-group-item-action"
-                        >
-                            {`${user.displayName}@${user.username}`}
-                        </div>);
+                        return <UserListItem key={user.username} user={user}/>;
                     })}
                 </div>
             </div>
