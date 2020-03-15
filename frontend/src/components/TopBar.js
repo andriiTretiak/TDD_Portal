@@ -14,7 +14,7 @@ export class TopBar extends Component {
 
     render() {
         const { user } = this.props;
-        const { id, username, displayName, password, image, isLoggedIn } = user;
+        const { username, isLoggedIn } = user;
 
         let links = (
             <ul className="nav navbar-nav ml-auto">
