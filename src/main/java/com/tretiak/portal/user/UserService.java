@@ -1,5 +1,6 @@
 package com.tretiak.portal.user;
 
+import com.tretiak.portal.error.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,5 +27,13 @@ public class UserService {
             return userRepository.findByUsernameNot(loggedUser.getUsername(), pageable);
         }
         return userRepository.findAll(pageable);
+    }
+
+    public User getByUsername(String username) {
+        User inDb = userRepository.findByUsername(username);
+        if(inDb == null){
+            throw new NotFoundException(username + " not found");
+        }
+        return inDb;
     }
 }
