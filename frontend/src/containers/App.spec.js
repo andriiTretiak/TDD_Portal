@@ -14,6 +14,14 @@ apiCalls.listUsers = jest.fn().mockResolvedValue({
         size:3
     }
 });
+apiCalls.getUser = jest.fn().mockResolvedValue({
+    data: {
+        id: 1,
+        username: 'user1',
+        displayName: 'display1',
+        image: 'profile1.png'
+    }
+});
 
 beforeEach(() => {
     localStorage.clear();
