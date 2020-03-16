@@ -1,5 +1,6 @@
 import React from 'react';
 import defaultPicture from '../assets/profile.png';
+import {Link} from 'react-router-dom';
 
 const UserListItem = props => {
 
@@ -9,7 +10,8 @@ const UserListItem = props => {
     }
 
     return (
-        <div
+        <Link
+            to={`/${props.user.username}`}
             className="list-group-item list-group-item-action"
         >
             <img
@@ -20,7 +22,7 @@ const UserListItem = props => {
                 src={imageSource}
             />
             <span className="pl-2">{`${props.user.displayName}@${props.user.username}`}</span>
-        </div>
+        </Link>
     )
 };
 
