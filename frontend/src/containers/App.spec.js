@@ -23,6 +23,46 @@ apiCalls.getUser = jest.fn().mockResolvedValue({
     }
 });
 
+const mockSuccessGetUser1 = {
+    data: {
+        id: 1,
+        username: 'user1',
+        displayName: 'display1',
+        image: 'profile1.png'
+    }
+};
+
+const mockSuccessGetUser2 = {
+    data: {
+        id: 2,
+        username: 'user2',
+        displayName: 'display2',
+        image: 'profile2.png'
+    }
+};
+
+const mockFailGetUser = {
+    response: {
+        data: {
+            message: 'User not found'
+        }
+    }
+};
+
+const setUserOneLoggedInStorage = () => {
+    localStorage.setItem(
+        'portal-auth',
+        JSON.stringify({
+            id: 1,
+            username: 'user1',
+            displayName: 'display1',
+            image: 'profile1.png',
+            password: 'P4ssword',
+            isLoggedIn: true
+        })
+    );
+};
+
 beforeEach(() => {
     localStorage.clear();
     delete axios.defaults.headers.common['Authorization'];
@@ -183,14 +223,7 @@ describe('App', () => {
         });
     });
     it('displays logged in tapBar when storage has logged in user data', () => {
-        localStorage.setItem('portal-auth', JSON.stringify({
-            id:1,
-            username: 'user1',
-            displayName: 'display1',
-            image: 'profile1.png',
-            password: 'P4ssword',
-            isLoggedIn: true
-        }));
+        setUserOneLoggedInStorage();
         const {queryByText} = setup('/');
         const myProfileLink = queryByText('Profile');
         expect(myProfileLink).toBeInTheDocument();
@@ -216,6 +249,30 @@ describe('App', () => {
         const encoded = btoa('user1:P4ssword');
         const expectedAuthorization = `Basic ${encoded}`;
         expect(axiosAuthorization).toBe(expectedAuthorization);
+    });
+    it('updates user page after clicking my profile when another user page was opened', async () => {
+        apiCalls.getUser = jest.fn()
+            .mockResolvedValueOnce(mockSuccessGetUser2)
+            .mockResolvedValueOnce(mockSuccessGetUser1);
+        setUserOneLoggedInStorage();
+        const { queryByText } = setup('/user2');
+        await waitForElement(() => queryByText('display2@user2'));
+        const profileLink = queryByText('Profile');
+        fireEvent.click(profileLink);
+        const user1Info = await waitForElement(() => queryByText('display1@user1'));
+        expect(user1Info).toBeInTheDocument();
+    });
+    it('updates user page after clicking my profile when another non existing user page was opened', async () => {
+        apiCalls.getUser = jest.fn()
+            .mockRejectedValueOnce(mockFailGetUser)
+            .mockResolvedValueOnce(mockSuccessGetUser1);
+        setUserOneLoggedInStorage();
+        const { queryByText } = setup('/user50');
+        await waitForElement(() => queryByText('User not found'));
+        const profileLink = queryByText('Profile');
+        fireEvent.click(profileLink);
+        const user1Info = await waitForElement(() => queryByText('display1@user1'));
+        expect(user1Info).toBeInTheDocument();
     });
 });
 

@@ -9,15 +9,26 @@ export class UserPage extends React.Component {
     };
 
     componentDidMount() {
+        this.loadUser();
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if(prevProps.match.params.username !== this.props.match.params.username){
+            this.loadUser();
+        }
+    }
+
+    loadUser() {
         const username = this.props.match.params.username;
         if (!username) {
             return;
         }
+        this.setState({userNotFound: false});
         apiCalls.getUser(username)
             .then(response =>
                 this.setState({user: response.data})
             ).catch(error => {
-                this.setState({userNotFound: true})
+            this.setState({userNotFound: true})
         });
     }
 

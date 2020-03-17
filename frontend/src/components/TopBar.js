@@ -10,6 +10,7 @@ export class TopBar extends Component {
             type: 'LOGOUT_SUCCESS',
         };
         this.props.dispatch(action);
+        localStorage.removeItem('portal-auth');
     };
 
     render() {

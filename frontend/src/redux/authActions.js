@@ -24,4 +24,4 @@ export const signupHandler = user => {
                 return dispatch(loginHandler(user));
             });
     }
-}
+};
