@@ -43,11 +43,24 @@ describe('UserPage', () => {
             const text = await waitForElement(() => queryByText('display1@user1'));
             expect(text).toBeInTheDocument();
         });
-        it('displays not found alert when user not foud', async () => {
+        it('displays not found alert when user not found', async () => {
             apiCalls.getUser = jest.fn().mockRejectedValue(mockFailGetUser);
             const { queryByText } = setup({match});
             const alert = await waitForElement(() => queryByText('User not found'));
             expect(alert).toBeInTheDocument();
+        });
+        it('displays spinner while loading user data', () => {
+            const mockDelayedResponse = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve(mockSuccessGetUser)
+                    }, 300)
+                });
+            });
+            apiCalls.getUser = mockDelayedResponse;
+            const { queryByText } = setup({match});
+            const spinner = queryByText('Loading...');
+            expect(spinner).toBeInTheDocument();
         });
     });
     describe('Lifecycle', () => {
