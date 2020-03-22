@@ -2,6 +2,9 @@ import React from "react";
 import {render, waitForElement} from "@testing-library/react";
 import UserPage from './UserPage';
 import * as apiCalls from '../api/apiCalls';
+import {Provider} from 'react-redux';
+import configureStore from '../redux/configureStore';
+import axios from "axios";
 
 const mockSuccessGetUser = {
     data: {
@@ -12,7 +15,7 @@ const mockSuccessGetUser = {
     }
 };
 
-const mockFailGetUser ={
+const mockFailGetUser = {
     response: {
         data: {
             message: 'User not found'
@@ -20,32 +23,56 @@ const mockFailGetUser ={
     }
 };
 
-const match ={
+const match = {
     params: {
         username: 'user1'
     }
 };
 
-const setup =(props) => {
-    return render(<UserPage {...props}/>)
+const setup = (props) => {
+    const store = configureStore(false);
+    return render(
+        <Provider store={store}>
+            <UserPage {...props}/>
+        </Provider>)
+};
+
+
+beforeEach(() => {
+    localStorage.clear();
+    delete axios.defaults.headers.common['Authorization'];
+});
+
+const setUserOneLoggedInStorage = () => {
+    localStorage.setItem(
+        'portal-auth',
+        JSON.stringify({
+            id: 1,
+            username: 'user1',
+            displayName: 'display1',
+            image: 'profile1.png',
+            password: 'P4ssword',
+            isLoggedIn: true
+        })
+    );
 };
 
 describe('UserPage', () => {
     describe('Layout', () => {
         it('has root page div', () => {
-            const { queryByTestId } = setup();
+            const {queryByTestId} = setup();
             const userPageDiv = queryByTestId('userpage');
             expect(userPageDiv).toBeInTheDocument();
         });
         it('displays the displayName@username when user data loaded', async () => {
             apiCalls.getUser = jest.fn().mockResolvedValue(mockSuccessGetUser);
-            const { queryByText } = setup({match});
+            const {queryByText} = setup({match});
             const text = await waitForElement(() => queryByText('display1@user1'));
             expect(text).toBeInTheDocument();
         });
         it('displays not found alert when user not found', async () => {
             apiCalls.getUser = jest.fn().mockRejectedValue(mockFailGetUser);
-            const { queryByText } = setup({match});
+            const {queryByText} = setup({match});
             const alert = await waitForElement(() => queryByText('User not found'));
             expect(alert).toBeInTheDocument();
         });
@@ -58,9 +85,17 @@ describe('UserPage', () => {
                 });
             });
             apiCalls.getUser = mockDelayedResponse;
-            const { queryByText } = setup({match});
+            const {queryByText} = setup({match});
             const spinner = queryByText('Loading...');
             expect(spinner).toBeInTheDocument();
+        });
+        it('displays the edit button when loggedInUser matches to user in url', async () => {
+            setUserOneLoggedInStorage();
+            apiCalls.getUser = jest.fn().mockResolvedValue(mockSuccessGetUser);
+            const {queryByText} = setup({match});
+            await waitForElement(() => queryByText('display1@user1'));
+            const editButton = queryByText('Edit');
+            expect(editButton).toBeInTheDocument();
         });
     });
     describe('Lifecycle', () => {

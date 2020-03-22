@@ -2,9 +2,9 @@ import React from 'react';
 import {fireEvent, render, waitForElement} from '@testing-library/react';
 import {MemoryRouter} from 'react-router-dom';
 import {Provider} from 'react-redux';
+import configureStore from '../redux/configureStore';
 import axios from 'axios';
 import App from './App';
-import configureStore from '../redux/configureStore';
 import * as apiCalls from '../api/apiCalls';
 
 apiCalls.listUsers = jest.fn().mockResolvedValue({

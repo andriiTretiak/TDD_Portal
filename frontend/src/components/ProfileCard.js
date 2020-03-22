@@ -16,6 +16,9 @@ const ProfileCard = (props) => {
             </div>
             <div className="card-body text-center">
                 <h4>{`${displayName}@${username}`}</h4>
+                {props.isEditable && <button className="btn btn-outline-success">
+                    <i className="fas fa-user-edit" /> Edit
+                </button>}
             </div>
         </div>
     );
