@@ -3,6 +3,7 @@ package com.tretiak.portal.user;
 import com.tretiak.portal.error.ApiError;
 import com.tretiak.portal.shared.CurrentUser;
 import com.tretiak.portal.shared.GenericResponse;
+import com.tretiak.portal.user.vm.UserUpdateVM;
 import com.tretiak.portal.user.vm.UserVM;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,8 +47,8 @@ public class UserController {
 
     @PutMapping("/users/{id:[0-9]+}")
     @PreAuthorize("#id == principal.id")
-    void updateUser(@PathVariable long id){
-
+    UserVM updateUser(@PathVariable long id, @RequestBody(required = false) UserUpdateVM userUpdate){
+        return new UserVM(userService.update(id, userUpdate));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

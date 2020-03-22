@@ -1,6 +1,7 @@
 package com.tretiak.portal.user;
 
 import com.tretiak.portal.error.NotFoundException;
+import com.tretiak.portal.user.vm.UserUpdateVM;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,5 +36,11 @@ public class UserService {
             throw new NotFoundException(username + " not found");
         }
         return inDb;
+    }
+
+    public User update(long id, UserUpdateVM userUpdate) {
+        User inDb = userRepository.getOne(id);
+        inDb.setDisplayName(userUpdate.getDisplayName());
+        return userRepository.save(inDb);
     }
 }
