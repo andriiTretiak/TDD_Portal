@@ -1,8 +1,10 @@
 import React from 'react';
 import ProfileImageWithDefault from "./ProfileImageWithDefault";
+import Input from "./Input";
 
 const ProfileCard = (props) => {
     const {displayName, username, image} = props.user;
+    const showEditButton = props.isEditable && !props.isEditMode;
     return (
         <div className="card">
             <div className="card-header text-center">
@@ -15,10 +17,30 @@ const ProfileCard = (props) => {
                 />
             </div>
             <div className="card-body text-center">
-                <h4>{`${displayName}@${username}`}</h4>
-                {props.isEditable && <button className="btn btn-outline-success">
-                    <i className="fas fa-user-edit" /> Edit
-                </button>}
+                {!props.inEditMode && <h4>{`${displayName}@${username}`}</h4>}
+                {props.inEditMode && (
+                    <div className="mb-2">
+                        <Input
+                            value={displayName}
+                            label={`Change Display Name for ${username}`}
+                        />
+                    </div>
+                )}
+                {showEditButton && <button className="btn btn-outline-success">
+                    <i className="fas fa-user-edit"/> Edit
+                </button>};
+                {
+                    props.inEditMode && (
+                        <div>
+                            <button className="btn btn-primary">
+                                <i className="fas fa-save"/> Save
+                            </button>
+                            <button className="btn btn-outline-secondary ml-1">
+                                <i className="fas fa-window-close"/> Cancel
+                            </button>
+                        </div>
+                    )
+                }
             </div>
         </div>
     );
