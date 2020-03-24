@@ -9,7 +9,8 @@ export class UserPage extends React.Component {
         user: undefined,
         userNotFound: false,
         isLoadingUser: false,
-        inEditMode: false
+        inEditMode: false,
+        originalDisplayName: undefined
     };
 
     componentDidMount() {
@@ -41,7 +42,16 @@ export class UserPage extends React.Component {
     };
 
     onCLickCancel = () => {
-        this.setState({inEditMode: false})
+        const  user = {...this.state.user};
+        if(this.state.originalDisplayName !== undefined){
+            user.displayName = this.state.originalDisplayName;
+
+        }
+        this.setState({
+            user,
+            originalDisplayName: undefined,
+            inEditMode: false
+        })
     };
 
     onCLickSave = () => {
@@ -51,14 +61,21 @@ export class UserPage extends React.Component {
         };
         apiCalls.updateUser(userId, userUpdate)
             .then(response => {
-                this.setState({inEditMode: false})
+                this.setState({
+                    originalDisplayName: undefined,
+                    inEditMode: false
+                })
             });
     };
 
     onChangeDisplayName = (event) => {
         const user = {...this.state.user};
+        let originalDisplayName = this.state.originalDisplayName;
+        if(originalDisplayName === undefined){
+            originalDisplayName = user.displayName;
+        }
         user.displayName = event.target.value;
-        this.setState({user});
+        this.setState({user, originalDisplayName});
     };
 
     render() {
