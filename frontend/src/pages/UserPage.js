@@ -8,7 +8,8 @@ export class UserPage extends React.Component {
     state = {
         user: undefined,
         userNotFound: false,
-        isLoadingUser: false
+        isLoadingUser: false,
+        inEditMode: false
     };
 
     componentDidMount() {
@@ -35,6 +36,14 @@ export class UserPage extends React.Component {
         });
     }
 
+    onCLickEdit = () => {
+        this.setState({inEditMode: true})
+    };
+
+    onCLickCancel =() => {
+        this.setState({inEditMode: false})
+    };
+
     render() {
         let pageContent;
         if(this.state.isLoadingUser){
@@ -56,7 +65,13 @@ export class UserPage extends React.Component {
             )
         } else {
             const isEditable = this.props.loggedInUser.username === this.props.match.params.username;
-            pageContent = this.state.user && <ProfileCard user={this.state.user} isEditable={isEditable} />
+            pageContent = this.state.user && <ProfileCard
+                user={this.state.user}
+                isEditable={isEditable}
+                inEditMode={this.state.inEditMode}
+                onCLickEdit={this.onCLickEdit}
+                onCLickCancel={this.onCLickCancel}
+            />
         }
         return (
             <div data-testid="userpage">
