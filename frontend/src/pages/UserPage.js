@@ -17,7 +17,7 @@ export class UserPage extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        if(prevProps.match.params.username !== this.props.match.params.username){
+        if (prevProps.match.params.username !== this.props.match.params.username) {
             this.loadUser();
         }
     }
@@ -40,13 +40,30 @@ export class UserPage extends React.Component {
         this.setState({inEditMode: true})
     };
 
-    onCLickCancel =() => {
+    onCLickCancel = () => {
         this.setState({inEditMode: false})
+    };
+
+    onCLickSave = () => {
+        const userId = this.props.loggedInUser.id;
+        const userUpdate = {
+            displayName: this.state.user.displayName
+        };
+        apiCalls.updateUser(userId, userUpdate)
+            .then(response => {
+                this.setState({inEditMode: false})
+            });
+    };
+
+    onChangeDisplayName = (event) => {
+        const user = {...this.state.user};
+        user.displayName = event.target.value;
+        this.setState({user});
     };
 
     render() {
         let pageContent;
-        if(this.state.isLoadingUser){
+        if (this.state.isLoadingUser) {
             pageContent = (
                 <div className="d-flex">
                     <div className="spinner-border text-black-50 m-auto">
@@ -54,11 +71,11 @@ export class UserPage extends React.Component {
                     </div>
                 </div>
             )
-        } else if(this.state.userNotFound){
+        } else if (this.state.userNotFound) {
             pageContent = (
                 <div className="alert alert-danger text-center">
                     <div className="alert-heading">
-                        <i className="fas fa-exclamation-triangle fa-3x" />
+                        <i className="fas fa-exclamation-triangle fa-3x"/>
                     </div>
                     <h5>User not found</h5>
                 </div>
@@ -71,6 +88,8 @@ export class UserPage extends React.Component {
                 inEditMode={this.state.inEditMode}
                 onCLickEdit={this.onCLickEdit}
                 onCLickCancel={this.onCLickCancel}
+                onCLickSave={this.onCLickSave}
+                onChangeDisplayName={this.onChangeDisplayName}
             />
         }
         return (
