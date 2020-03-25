@@ -10,7 +10,8 @@ export class UserPage extends React.Component {
         userNotFound: false,
         isLoadingUser: false,
         inEditMode: false,
-        originalDisplayName: undefined
+        originalDisplayName: undefined,
+        pendingUpdateCall: false
     };
 
     componentDidMount() {
@@ -42,8 +43,8 @@ export class UserPage extends React.Component {
     };
 
     onCLickCancel = () => {
-        const  user = {...this.state.user};
-        if(this.state.originalDisplayName !== undefined){
+        const user = {...this.state.user};
+        if (this.state.originalDisplayName !== undefined) {
             user.displayName = this.state.originalDisplayName;
 
         }
@@ -59,19 +60,25 @@ export class UserPage extends React.Component {
         const userUpdate = {
             displayName: this.state.user.displayName
         };
+        this.setState({pendingUpdateCall: true});
         apiCalls.updateUser(userId, userUpdate)
             .then(response => {
                 this.setState({
                     originalDisplayName: undefined,
-                    inEditMode: false
+                    inEditMode: false,
+                    pendingUpdateCall: false
                 })
-            });
+            }).catch((error) => {
+            this.setState({
+                pendingUpdateCall: false
+            })
+        });
     };
 
     onChangeDisplayName = (event) => {
         const user = {...this.state.user};
         let originalDisplayName = this.state.originalDisplayName;
-        if(originalDisplayName === undefined){
+        if (originalDisplayName === undefined) {
             originalDisplayName = user.displayName;
         }
         user.displayName = event.target.value;
@@ -107,6 +114,7 @@ export class UserPage extends React.Component {
                 onCLickCancel={this.onCLickCancel}
                 onCLickSave={this.onCLickSave}
                 onChangeDisplayName={this.onChangeDisplayName}
+                pendingUpdateCall={this.state.pendingUpdateCall}
             />
         }
         return (
