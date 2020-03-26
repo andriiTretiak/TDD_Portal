@@ -14,3 +14,5 @@ spring:
       pageable:
         default-page-size: 10
         max-page-size: 100
+portal:
+  upload-path: uploads-test

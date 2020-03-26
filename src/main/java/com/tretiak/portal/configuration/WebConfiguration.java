@@ -9,14 +9,27 @@ import java.io.File;
 
 @Configuration
 public class WebConfiguration implements WebMvcConfigurer {
+
+    private final AppConfiguration appConfiguration;
+
+    public WebConfiguration(AppConfiguration appConfiguration) {
+        this.appConfiguration = appConfiguration;
+    }
+
     @Bean
     CommandLineRunner createUploadFolder(){
         return args -> {
-            File uploadFolder = new File("uploads-test");
-            boolean uploadFolderExists = uploadFolder.exists() && uploadFolder.isDirectory();
-            if(!uploadFolderExists){
-                uploadFolder.mkdir();
-            }
+            createNonExistingFolder(appConfiguration.getUploadPath());
+            createNonExistingFolder(appConfiguration.getFullProfileImagesPath());
+            createNonExistingFolder(appConfiguration.getFullAttachmentsPath());
         };
+    }
+
+    private void createNonExistingFolder(String path) {
+        File folder = new File(path);
+        boolean folderExists = folder.exists() && folder.isDirectory();
+        if(!folderExists){
+            folder.mkdir();
+        }
     }
 }
