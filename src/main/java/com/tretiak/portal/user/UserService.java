@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class UserService {
 
@@ -41,6 +43,8 @@ public class UserService {
     public User update(long id, UserUpdateVM userUpdate) {
         User inDb = userRepository.getOne(id);
         inDb.setDisplayName(userUpdate.getDisplayName());
+        String savedImageName = inDb.getUsername() + UUID.randomUUID().toString().replace("-", "");
+        inDb.setImage(savedImageName);
         return userRepository.save(inDb);
     }
 }

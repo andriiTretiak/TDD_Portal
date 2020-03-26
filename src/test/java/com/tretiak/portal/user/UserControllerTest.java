@@ -4,6 +4,7 @@ import com.tretiak.portal.error.ApiError;
 import com.tretiak.portal.shared.GenericResponse;
 import com.tretiak.portal.user.vm.UserUpdateVM;
 import com.tretiak.portal.user.vm.UserVM;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,8 @@ import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -377,6 +381,24 @@ public class UserControllerTest {
         HttpEntity<UserUpdateVM> requestEntity = new HttpEntity<>(updatedUser);
         ResponseEntity<UserVM> response = putUser(user.getId(), requestEntity, UserVM.class);
         assertThat(response.getBody().getDisplayName()).isEqualTo(updatedUser.getDisplayName());
+    }
+
+    @Test
+    public void putUser_whenValidRequestBodyWithSupportedImageFromAuthorizedUser_receiveUserVmWithRandomImageName() throws IOException {
+        User user = userService.save(createValidUser("user1"));
+        authenticate(user.getUsername());
+
+        ClassPathResource imageResource = new ClassPathResource("profile.png");
+
+        UserUpdateVM updatedUser = createUserUpdateVM();
+
+        byte[] imageArr = FileUtils.readFileToByteArray(imageResource.getFile());
+        String imageString = Base64.getEncoder().encodeToString(imageArr);
+        updatedUser.setImage(imageString);
+
+        HttpEntity<UserUpdateVM> requestEntity = new HttpEntity<>(updatedUser);
+        ResponseEntity<UserVM> response = putUser(user.getId(), requestEntity, UserVM.class);
+        assertThat(response.getBody().getImage()).isNotEqualTo("profile-image.png");
     }
 
     private UserUpdateVM createUserUpdateVM() {
