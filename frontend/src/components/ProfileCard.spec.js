@@ -85,4 +85,12 @@ describe('ProfileCard', () => {
         const cancelButton = queryByText('Cancel');
         expect(cancelButton).toBeInTheDocument();
     });
+    it('display file input when inEditMode property set as true', () => {
+        const { container } = render(
+                <ProfileCard user={user} inEditMode={true}/>
+            );
+        const inputs = container.querySelectorAll('input');
+        const uploadInput = inputs[1];
+        expect(uploadInput.type).toBe('file');
+    });
 });
