@@ -1,10 +1,12 @@
 package com.tretiak.portal.user;
 
+import com.tretiak.portal.configuration.AppConfiguration;
 import com.tretiak.portal.error.ApiError;
 import com.tretiak.portal.shared.GenericResponse;
 import com.tretiak.portal.user.vm.UserUpdateVM;
 import com.tretiak.portal.user.vm.UserVM;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +23,7 @@ import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
@@ -46,6 +49,9 @@ public class UserControllerTest {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AppConfiguration appConfiguration;
 
     @Before
     public void cleanup(){
@@ -388,17 +394,38 @@ public class UserControllerTest {
         User user = userService.save(createValidUser("user1"));
         authenticate(user.getUsername());
 
-        ClassPathResource imageResource = new ClassPathResource("profile.png");
-
         UserUpdateVM updatedUser = createUserUpdateVM();
-
-        byte[] imageArr = FileUtils.readFileToByteArray(imageResource.getFile());
-        String imageString = Base64.getEncoder().encodeToString(imageArr);
+        String imageString = readFileBase64("profile.png");
         updatedUser.setImage(imageString);
 
         HttpEntity<UserUpdateVM> requestEntity = new HttpEntity<>(updatedUser);
         ResponseEntity<UserVM> response = putUser(user.getId(), requestEntity, UserVM.class);
         assertThat(response.getBody().getImage()).isNotEqualTo("profile-image.png");
+    }
+
+    @Test
+    public void putUser_whenValidRequestBodyWithSupportedImageFromAuthorizedUser_imageIsStoredUnderProfileFolder() throws IOException {
+        User user = userService.save(createValidUser("user1"));
+        authenticate(user.getUsername());
+
+        UserUpdateVM updatedUser = createUserUpdateVM();
+        String imageString = readFileBase64("profile.png");
+        updatedUser.setImage(imageString);
+
+        HttpEntity<UserUpdateVM> requestEntity = new HttpEntity<>(updatedUser);
+        ResponseEntity<UserVM> response = putUser(user.getId(), requestEntity, UserVM.class);
+
+        String storedImageName = response.getBody().getImage();
+
+        File storedImage = new File(appConfiguration.getFullProfileImagesPath() + "/" + storedImageName);
+
+        assertThat(storedImage.exists()).isTrue();
+    }
+
+    private String readFileBase64(String fileName) throws IOException {
+        ClassPathResource imageResource = new ClassPathResource(fileName);
+        byte[] imageArr = FileUtils.readFileToByteArray(imageResource.getFile());
+        return Base64.getEncoder().encodeToString(imageArr);
     }
 
     private UserUpdateVM createUserUpdateVM() {
@@ -433,5 +460,11 @@ public class UserControllerTest {
     private <T>ResponseEntity<T> putUser(long id, HttpEntity<?> requestEntity, Class<T> responseType){
         String path = API_1_0_USERS + "/" + id;
         return testRestTemplate.exchange(path, HttpMethod.PUT, requestEntity, responseType);
+    }
+
+    @After
+    public void cleanupDirectory() throws IOException {
+        FileUtils.cleanDirectory(new File(appConfiguration.getFullProfileImagesPath()));
+        FileUtils.cleanDirectory(new File(appConfiguration.getFullAttachmentsPath()));
     }
 }
