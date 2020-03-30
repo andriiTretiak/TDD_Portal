@@ -422,6 +422,45 @@ public class UserControllerTest {
         assertThat(storedImage.exists()).isTrue();
     }
 
+    @Test
+    public void putUser_withInvalidRequestBodyWithNullDisplayNameFromAuthorizedUser_receiveBadRequest() {
+        User user = userService.save(createValidUser("user1"));
+        authenticate(user.getUsername());
+
+        UserUpdateVM updatedUser = new UserUpdateVM();
+
+        HttpEntity<UserUpdateVM> requestEntity = new HttpEntity<>(updatedUser);
+        ResponseEntity<Object> response = putUser(user.getId(), requestEntity, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void putUser_withInvalidRequestBodyWithLessThanMinSizeDisplayNameFromAuthorizedUser_receiveBadRequest() {
+        User user = userService.save(createValidUser("user1"));
+        authenticate(user.getUsername());
+
+        UserUpdateVM updatedUser = new UserUpdateVM();
+        updatedUser.setDisplayName("abc");
+
+        HttpEntity<UserUpdateVM> requestEntity = new HttpEntity<>(updatedUser);
+        ResponseEntity<Object> response = putUser(user.getId(), requestEntity, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void putUser_withInvalidRequestBodyWithMoreThanMaxSizeDisplayNameFromAuthorizedUser_receiveBadRequest() {
+        User user = userService.save(createValidUser("user1"));
+        authenticate(user.getUsername());
+
+        String valueOf256Chars = IntStream.rangeClosed(1,256).mapToObj(value -> "a").collect(Collectors.joining());
+        UserUpdateVM updatedUser = new UserUpdateVM();
+        updatedUser.setDisplayName(valueOf256Chars);
+
+        HttpEntity<UserUpdateVM> requestEntity = new HttpEntity<>(updatedUser);
+        ResponseEntity<Object> response = putUser(user.getId(), requestEntity, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
     private String readFileBase64(String fileName) throws IOException {
         ClassPathResource imageResource = new ClassPathResource(fileName);
         byte[] imageArr = FileUtils.readFileToByteArray(imageResource.getFile());
