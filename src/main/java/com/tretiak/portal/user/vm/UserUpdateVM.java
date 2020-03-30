@@ -1,5 +1,6 @@
 package com.tretiak.portal.user.vm;
 
+import com.tretiak.portal.shared.ProfileImage;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -10,5 +11,7 @@ public class UserUpdateVM {
     @NotNull
     @Size(min = 4, max = 255)
     private String displayName;
+
+    @ProfileImage
     private String image;
 }
