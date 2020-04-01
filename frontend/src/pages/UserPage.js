@@ -12,7 +12,8 @@ export class UserPage extends React.Component {
         inEditMode: false,
         originalDisplayName: undefined,
         pendingUpdateCall: false,
-        image: undefined
+        image: undefined,
+        errors: {}
     };
 
     componentDidMount() {
@@ -76,9 +77,14 @@ export class UserPage extends React.Component {
                     image: undefined
                 })
             }).catch((error) => {
-            this.setState({
-                pendingUpdateCall: false
-            })
+                let errors = {};
+                if(error.response.data.validationErrors){
+                    errors = error.response.data.validationErrors;
+                }
+                this.setState({
+                    pendingUpdateCall: false,
+                    errors
+                });
         });
     };
 
@@ -93,12 +99,12 @@ export class UserPage extends React.Component {
     };
 
     onFileSelect = (event) => {
-        if(event.target.files.length === 0){
+        if (event.target.files.length === 0) {
             return;
         }
         const file = event.target.files[0];
         let reader = new FileReader();
-        reader.onloadend =() => {
+        reader.onloadend = () => {
             this.setState({
                 image: reader.result
             })
@@ -138,6 +144,7 @@ export class UserPage extends React.Component {
                 pendingUpdateCall={this.state.pendingUpdateCall}
                 loadedImage={this.state.image}
                 onFileSelect={this.onFileSelect}
+                errors={this.state.errors}
             />
         }
         return (
