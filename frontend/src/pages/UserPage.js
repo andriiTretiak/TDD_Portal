@@ -54,7 +54,8 @@ export class UserPage extends React.Component {
             user,
             originalDisplayName: undefined,
             inEditMode: false,
-            image: undefined
+            image: undefined,
+            errors: {}
         })
     };
 
@@ -95,18 +96,23 @@ export class UserPage extends React.Component {
             originalDisplayName = user.displayName;
         }
         user.displayName = event.target.value;
-        this.setState({user, originalDisplayName});
+        const errors = {...this.state.errors};
+        errors.displayName = undefined;
+        this.setState({user, originalDisplayName, errors});
     };
 
     onFileSelect = (event) => {
         if (event.target.files.length === 0) {
             return;
         }
+        const errors = {...this.state.errors};
+        errors.image = undefined;
         const file = event.target.files[0];
         let reader = new FileReader();
         reader.onloadend = () => {
             this.setState({
-                image: reader.result
+                image: reader.result,
+                errors
             })
         };
         reader.readAsDataURL(file);
