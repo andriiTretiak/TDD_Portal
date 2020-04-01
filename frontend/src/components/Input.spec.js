@@ -70,5 +70,10 @@ describe('Layout', () => {
         const errorMessage = queryByText('Cannot be null');
         expect(errorMessage).not.toBeInTheDocument();
     });
+    it('has form-control-file class when type is file', () => {
+        const { container } = render(<Input type="file"/>);
+        const input = container.querySelector('input');
+        expect(input.className).toBe('form-control-file');
+    });
 });
 
