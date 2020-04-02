@@ -7,11 +7,45 @@ import ProfileImageWithDefault from "./ProfileImageWithDefault";
 
 export class TopBar extends Component {
     onClickLogout = () => {
+        this.setState({
+            dropdownVisible: false
+        });
         const action = {
             type: 'LOGOUT_SUCCESS',
         };
         this.props.dispatch(action);
-        localStorage.removeItem('portal-auth');
+    };
+
+    state = {
+        dropdownVisible: false
+    };
+
+    componentDidMount() {
+        document.addEventListener('click', this.onClickTracker);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('click', this.onClickTracker);
+    }
+
+    onClickTracker = (event) => {
+        if (this.actionArea && !this.actionArea.contains(event.target)) {
+            this.setState({
+                dropdownVisible: false
+            });
+        }
+    };
+
+    onClickDisplayName = () => {
+        this.setState({dropdownVisible: true});
+    };
+
+    onClickProfile =()=>{
+        this.setState({dropdownVisible: false});
+    };
+
+    assignActionArea = (area) => {
+        this.actionArea = area;
     };
 
     render() {
@@ -32,11 +66,20 @@ export class TopBar extends Component {
                 </li>
             </ul>
         );
+
         if (isLoggedIn) {
+            let dropdownClass = "p-0 shadow dropdown-menu";
+            if (this.state.dropdownVisible) {
+                dropdownClass += ' show';
+            }
             links = (
-                <ul className="nav navbar-nav ml-auto">
+                <ul className="nav navbar-nav ml-auto" ref={this.assignActionArea}>
                     <li className="nav-item dropdown">
-                        <div className="d-flex" style={{cursor: 'pointer'}}>
+                        <div
+                            className="d-flex"
+                            style={{cursor: 'pointer'}}
+                            onClick={this.onClickDisplayName}
+                        >
                             <ProfileImageWithDefault
                                 className="rounded-circle m-auto"
                                 width="32"
@@ -45,8 +88,15 @@ export class TopBar extends Component {
                             />
                             <span className="nav-link dropdown-toggle">{this.props.user.displayName}</span>
                         </div>
-                        <div className="p-0 shadow dropdown-menu">
-                            <Link to={`/${username}`} className="dropdown-item">
+                        <div
+                            className={dropdownClass}
+                            data-testid="drop-down-menu"
+                        >
+                            <Link
+                                to={`/${username}`}
+                                className="dropdown-item"
+                                onClick={this.onClickProfile}
+                            >
                                 <i className="fas fa-user text-info"/>Profile
                             </Link>
                             <span className="dropdown-item" onClick={this.onClickLogout} style={{cursor: 'pointer'}}>
