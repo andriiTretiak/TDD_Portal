@@ -27,10 +27,11 @@ export default (addLogger = true) => {
         }
     }
 
-    const middlewares = [thunk];
-    if(addLogger)
-        middlewares.push(logger);
-    const store = createStore(authReducer, persistedState, applyMiddleware(...middlewares));
+    const middleware = addLogger
+        ? applyMiddleware(thunk, logger)
+        : applyMiddleware(thunk);
+
+    const store = createStore(authReducer, persistedState, middleware);
     store.subscribe(() =>{
         localStorage.setItem('portal-auth', JSON.stringify(store.getState()));
         apiCalls.setAuthorizationHeader(store.getState());

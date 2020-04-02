@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {connect} from 'react-redux';
 
 import logo from '../assets/portal-logo.png';
+import ProfileImageWithDefault from "./ProfileImageWithDefault";
 
 export class TopBar extends Component {
     onClickLogout = () => {
@@ -34,6 +35,15 @@ export class TopBar extends Component {
         if (isLoggedIn) {
             links = (
                 <ul className="nav navbar-nav ml-auto">
+                    <li className="nav-item nav-link">
+                        <ProfileImageWithDefault
+                            className="rounded-circle"
+                            width="32"
+                            height="32"
+                            image={this.props.user.image}
+                        />
+                        {this.props.user.displayName}
+                    </li>
                     <li className="nav-item">
                         <Link to={`/${username}`} className="nav-link">
                             Profile
