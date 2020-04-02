@@ -15,8 +15,8 @@ export class TopBar extends Component {
     };
 
     render() {
-        const { user } = this.props;
-        const { username, isLoggedIn } = user;
+        const {user} = this.props;
+        const {username, isLoggedIn} = user;
 
         let links = (
             <ul className="nav navbar-nav ml-auto">
@@ -35,22 +35,24 @@ export class TopBar extends Component {
         if (isLoggedIn) {
             links = (
                 <ul className="nav navbar-nav ml-auto">
-                    <li className="nav-item nav-link">
-                        <ProfileImageWithDefault
-                            className="rounded-circle"
-                            width="32"
-                            height="32"
-                            image={this.props.user.image}
-                        />
-                        {this.props.user.displayName}
-                    </li>
-                    <li className="nav-item">
-                        <Link to={`/${username}`} className="nav-link">
-                            Profile
-                        </Link>
-                    </li>
-                    <li className="nav-item nav-link" onClick={this.onClickLogout} style={{cursor: 'pointer'}}>
-                        Logout
+                    <li className="nav-item dropdown">
+                        <div className="d-flex" style={{cursor: 'pointer'}}>
+                            <ProfileImageWithDefault
+                                className="rounded-circle m-auto"
+                                width="32"
+                                height="32"
+                                image={this.props.user.image}
+                            />
+                            <span className="nav-link dropdown-toggle">{this.props.user.displayName}</span>
+                        </div>
+                        <div className="p-0 shadow dropdown-menu">
+                            <Link to={`/${username}`} className="dropdown-item">
+                                <i className="fas fa-user text-info"/>Profile
+                            </Link>
+                            <span className="dropdown-item" onClick={this.onClickLogout} style={{cursor: 'pointer'}}>
+                                <i className="fas fa-sign-out-alt text-danger"/>Logout
+                            </span>
+                        </div>
                     </li>
                 </ul>
             );
@@ -60,7 +62,7 @@ export class TopBar extends Component {
                 <div className="wontainer">
                     <nav className="navbar navbar-light navbar-expand">
                         <Link to="/" className="navbar-brand">
-                            <img src={logo} width="60" alt="Portal" /> Inner Portal
+                            <img src={logo} width="60" alt="Portal"/> Inner Portal
                         </Link>
                         {links}
                     </nav>
