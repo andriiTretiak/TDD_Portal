@@ -14,6 +14,12 @@ export default function authReducer(state = initialState, action) {
             return { ...initialState };
         case 'LOGIN_SUCCESS':
             return { ...action.payload, isLoggedIn: true };
+        case 'UPDATE-SUCCESS' :
+            return {
+                ...state,
+                displayName: action.payload.displayName,
+                image: action.payload.image
+            };
         default:
             return state;
     }

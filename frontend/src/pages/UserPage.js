@@ -76,7 +76,13 @@ export class UserPage extends React.Component {
                     pendingUpdateCall: false,
                     user,
                     image: undefined
-                })
+                }, () => {
+                    const action = {
+                        type: 'UPDATE-SUCCESS',
+                        payload: user
+                    };
+                    this.props.dispatch(action);
+                });
             }).catch((error) => {
                 let errors = {};
                 if(error.response.data.validationErrors){
