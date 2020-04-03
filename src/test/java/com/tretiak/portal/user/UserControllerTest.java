@@ -1,5 +1,6 @@
 package com.tretiak.portal.user;
 
+import com.tretiak.portal.TestUtil;
 import com.tretiak.portal.configuration.AppConfiguration;
 import com.tretiak.portal.error.ApiError;
 import com.tretiak.portal.shared.GenericResponse;
@@ -31,7 +32,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.tretiak.portal.user.TestUtil.createValidUser;
+import static com.tretiak.portal.TestUtil.createValidUser;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
