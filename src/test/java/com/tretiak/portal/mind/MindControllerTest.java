@@ -34,10 +34,14 @@ public class MindControllerTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private MindRepository mindRepository;
+
     @Before
     public void cleanup(){
         userRepository.deleteAll();
         testRestTemplate.getRestTemplate().getInterceptors().clear();
+        mindRepository.deleteAll();
     }
 
     @Test
@@ -61,6 +65,27 @@ public class MindControllerTest {
         Mind mind = createValidMind();
         ResponseEntity<ApiError> response = postMind(mind, ApiError.class);
         assertThat(response.getBody().getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @Test
+    public void postMind_whenMindIsValidAndUserIsAuthorized_mindSaveToDataBase(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = createValidMind();
+        postMind(mind, Object.class);
+        assertThat(mindRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    public void postMind_whenMindIsValidAndUserIsAuthorized_mindSaveToDataBaseWithTimestamp(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = createValidMind();
+        postMind(mind, Object.class);
+
+        Mind inDb = mindRepository.findAll().get(0);
+
+        assertThat(inDb.getTimestamp()).isNotNull();
     }
 
     private <T>ResponseEntity<T> postMind(Mind mind, Class<T> responseType) {

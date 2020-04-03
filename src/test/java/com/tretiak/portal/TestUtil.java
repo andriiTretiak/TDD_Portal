@@ -21,6 +21,8 @@ public class TestUtil {
     }
 
     public static Mind createValidMind(){
-        return new Mind("test content for the test mind");
+        Mind mind = new Mind();
+        mind.setContent("test content for the test mind");
+        return mind;
     }
 }

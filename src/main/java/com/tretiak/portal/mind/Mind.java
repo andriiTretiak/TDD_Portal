@@ -1,12 +1,20 @@
 package com.tretiak.portal.mind;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+import java.util.Date;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 public class Mind {
+
+    @Id
+    @GeneratedValue
+    private long id;
+
     private String content;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date timestamp;
 }
