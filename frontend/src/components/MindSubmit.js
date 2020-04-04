@@ -1,10 +1,17 @@
 import React, {Component} from 'react';
 import ProfileImageWithDefault from "./ProfileImageWithDefault";
-import {connect} from 'react-redux'
+import {connect} from 'react-redux';
+import * as apiCalls from '../api/apiCalls';
 
 class MindSubmit extends Component {
     state = {
-        focused: false
+        focused: false,
+        content: undefined
+    };
+
+    onChangeContent = (event) => {
+        const value = event.target.value;
+        this.setState({content: value});
     };
 
     onFocus = () => {
@@ -12,7 +19,23 @@ class MindSubmit extends Component {
     };
 
     onClickCancel = () => {
-        this.setState({focused: false});
+        this.setState({
+            focused: false,
+            content: ''
+        });
+    };
+
+    onClickSend = () => {
+        const body ={
+            content: this.state.content
+        };
+        apiCalls.postMind(body)
+            .then(response => {
+                this.setState({
+                    focused: false,
+                    content: ''
+                })
+            });
     };
 
     render() {
@@ -29,10 +52,17 @@ class MindSubmit extends Component {
                         className="form-control w=100"
                         rows={this.state.focused ? 3 : 1}
                         onFocus={this.onFocus}
+                        value={this.state.content}
+                        onChange={this.onChangeContent}
                     />
                     {this.state.focused && (
                         <div className="text-right mt-1">
-                            <button className="btn btn-success">Send</button>
+                            <button
+                                className="btn btn-success"
+                                onClick={this.onClickSend}
+                            >
+                                Send
+                            </button>
                             <button
                                 className="btn btn-light ml-1"
                                 onClick={this.onClickCancel}

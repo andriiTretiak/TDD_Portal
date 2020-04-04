@@ -1,9 +1,10 @@
 import React from "react";
-import {fireEvent, render} from "@testing-library/react";
+import {fireEvent, render, waitForDomChange} from "@testing-library/react";
 import MindSubmit from "./MindSubmit";
 import {Provider} from 'react-redux';
 import {createStore} from 'redux';
 import authReducer from '../redux/authReducer';
+import * as apiCalls from '../api/apiCalls';
 
 const defaultState = {
     id: 1,
@@ -86,6 +87,54 @@ describe('MindSubmit', () => {
             const cancelButton = queryByText('Cancel');
             fireEvent.click(cancelButton);
             expect(queryByText('Cancel')).not.toBeInTheDocument();
+        });
+        it('calls postMind with mind request object when clicking Send', () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const sendButton = queryByText('Send');
+
+            apiCalls.postMind = jest.fn().mockResolvedValue({});
+            fireEvent.click(sendButton);
+            expect(apiCalls.postMind).toHaveBeenCalledWith({
+                content: 'Test mind content'
+            });
+        });
+        it('returns to unfocused state after successful postMind action', async () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const sendButton = queryByText('Send');
+
+            apiCalls.postMind = jest.fn().mockResolvedValue({});
+            fireEvent.click(sendButton);
+            await waitForDomChange();
+            expect(queryByText('Send')).not.toBeInTheDocument();
+        });
+        it('clears content after successful postMind action', async () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const sendButton = queryByText('Send');
+
+            apiCalls.postMind = jest.fn().mockResolvedValue({});
+            fireEvent.click(sendButton);
+            await waitForDomChange();
+            expect(queryByText('Test mind content')).not.toBeInTheDocument();
+        });
+        it('clears content after clicking cancel', () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+            fireEvent.click(queryByText('Cancel'));
+            expect(queryByText('Test mind content')).not.toBeInTheDocument();
         });
     });
 });
