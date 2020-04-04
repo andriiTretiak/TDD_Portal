@@ -1,5 +1,5 @@
 import React from "react";
-import {render} from "@testing-library/react";
+import {fireEvent, render} from "@testing-library/react";
 import MindSubmit from "./MindSubmit";
 import {Provider} from 'react-redux';
 import {createStore} from 'redux';
@@ -46,6 +46,46 @@ describe('MindSubmit', () => {
             const {container} = setup();
             const image = container.querySelector('img');
             expect(image.src).toContain('/images/profile/' + defaultState.image);
+        });
+    });
+    describe('Interactions', () => {
+        it('displays 3 rows when focused to textarea', () => {
+            const {container} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            expect(textArea.rows).toBe(3);
+        });
+        it('displays Send button when focused to textarea', () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            const sendButton = queryByText('Send');
+            expect(sendButton).toBeInTheDocument();
+        });
+        it('displays Cancel button when focused to textarea', () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            const cancelButton = queryByText('Cancel');
+            expect(cancelButton).toBeInTheDocument();
+        });
+        it('does not display Send button when focused to textarea', () => {
+            const {queryByText} = setup();
+            const sendButton = queryByText('Send');
+            expect(sendButton).not.toBeInTheDocument();
+        });
+        it('does not display Cancel button when focused to textarea', () => {
+            const {queryByText} = setup();
+            const cancelButton = queryByText('Cancel');
+            expect(cancelButton).not.toBeInTheDocument();
+        });
+        it('returns back to unfocused state after clicking the cancel', () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            const cancelButton = queryByText('Cancel');
+            fireEvent.click(cancelButton);
+            expect(queryByText('Cancel')).not.toBeInTheDocument();
         });
     });
 });

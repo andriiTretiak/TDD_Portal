@@ -3,6 +3,18 @@ import ProfileImageWithDefault from "./ProfileImageWithDefault";
 import {connect} from 'react-redux'
 
 class MindSubmit extends Component {
+    state = {
+        focused: false
+    };
+
+    onFocus = () => {
+        this.setState({focused: true});
+    };
+
+    onClickCancel = () => {
+        this.setState({focused: false});
+    };
+
     render() {
         return (
             <div className="card d-flex flex-row p-1">
@@ -13,14 +25,29 @@ class MindSubmit extends Component {
                     image={this.props.loggedInUser.image}
                 />
                 <div className="flex-fill">
-                    <textarea className="form-control w=100" rows={1} />
+                    <textarea
+                        className="form-control w=100"
+                        rows={this.state.focused ? 3 : 1}
+                        onFocus={this.onFocus}
+                    />
+                    {this.state.focused && (
+                        <div className="text-right mt-1">
+                            <button className="btn btn-success">Send</button>
+                            <button
+                                className="btn btn-light ml-1"
+                                onClick={this.onClickCancel}
+                            >
+                                <i className="fas fa-times"/>
+                                Cancel
+                            </button>
+                        </div>)}
                 </div>
             </div>
         );
     }
 }
 
-const mapStateToProps =(state) => {
+const mapStateToProps = (state) => {
     return {
         loggedInUser: state
     }
