@@ -1,5 +1,7 @@
 package com.tretiak.portal.mind;
 
+import com.tretiak.portal.shared.CurrentUser;
+import com.tretiak.portal.user.User;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +20,7 @@ public class MindController {
     }
 
     @PostMapping("/minds")
-    void createMind(@Valid @RequestBody Mind mind){
-        mindService.save(mind);
+    void createMind(@Valid @RequestBody Mind mind, @CurrentUser User user){
+        mindService.save(user, mind);
     }
 }

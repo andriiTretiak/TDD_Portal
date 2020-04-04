@@ -1,5 +1,6 @@
 package com.tretiak.portal.mind;
 
+import com.tretiak.portal.user.User;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -13,8 +14,9 @@ public class MindService {
         this.mindRepository = mindRepository;
     }
 
-    void save(Mind mind){
+    void save(User user, Mind mind){
         mind.setTimestamp(new Date());
+        mind.setUser(user);
         mindRepository.save(mind);
     }
 }

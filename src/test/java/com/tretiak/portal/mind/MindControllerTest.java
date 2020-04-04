@@ -1,6 +1,7 @@
 package com.tretiak.portal.mind;
 
 import com.tretiak.portal.error.ApiError;
+import com.tretiak.portal.user.User;
 import com.tretiak.portal.user.UserRepository;
 import com.tretiak.portal.user.UserService;
 import org.junit.Before;
@@ -43,9 +44,9 @@ public class MindControllerTest {
 
     @Before
     public void cleanup(){
-        userRepository.deleteAll();
         testRestTemplate.getRestTemplate().getInterceptors().clear();
         mindRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -141,6 +142,30 @@ public class MindControllerTest {
         ResponseEntity<ApiError> response = postMind(mind, ApiError.class);
         Map<String, String> validationErrors = response.getBody().getValidationErrors();
         assertThat(validationErrors.get("content")).isNotNull();
+    }
+
+    @Test
+    public void postMind_whenMindIsValidAndUserIsAuthorized_mindSavedWithAuthenticatedUserInfo(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = createValidMind();
+        postMind(mind, Object.class);
+
+        Mind inDb = mindRepository.findAll().get(0);
+
+        assertThat(inDb.getUser().getUsername()).isEqualTo("user1");
+    }
+
+    @Test
+    public void postMind_whenMindIsValidAndUserIsAuthorized_mindCanBeAccessedFromUserEntity(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = createValidMind();
+        postMind(mind, Object.class);
+
+        User inDb = userRepository.findByUsername("user1");
+
+        assertThat(inDb.getMinds().size()).isEqualTo(1);
     }
 
     private <T>ResponseEntity<T> postMind(Mind mind, Class<T> responseType) {

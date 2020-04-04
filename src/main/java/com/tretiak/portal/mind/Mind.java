@@ -1,5 +1,6 @@
 package com.tretiak.portal.mind;
 
+import com.tretiak.portal.user.User;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -22,4 +23,7 @@ public class Mind {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date timestamp;
+
+    @ManyToOne
+    private User user;
 }
