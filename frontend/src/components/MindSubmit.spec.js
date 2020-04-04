@@ -136,5 +136,137 @@ describe('MindSubmit', () => {
             fireEvent.click(queryByText('Cancel'));
             expect(queryByText('Test mind content')).not.toBeInTheDocument();
         });
+        it('disables Send button when there is postMind api call', async () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const sendButton = queryByText('Send');
+
+            const mockFunction = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve({});
+                    }, 300);
+                });
+            });
+
+            apiCalls.postMind = mockFunction;
+            fireEvent.click(sendButton);
+            fireEvent.click(sendButton);
+
+            expect(mockFunction).toHaveBeenCalledTimes(1);
+        });
+        it('disables Cancel button when there is postMind api call', async () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const sendButton = queryByText('Send');
+
+            const mockFunction = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve({});
+                    }, 300);
+                });
+            });
+
+            apiCalls.postMind = mockFunction;
+            fireEvent.click(sendButton);
+
+            const cancelButton = queryByText('Cancel');
+            fireEvent.click(sendButton);
+
+            expect(cancelButton).toBeDisabled();
+        });
+        it('disables spinner when there is postMind api call', async () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const sendButton = queryByText('Send');
+
+            const mockFunction = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve({});
+                    }, 300);
+                });
+            });
+
+            apiCalls.postMind = mockFunction;
+            fireEvent.click(sendButton);
+
+            expect(queryByText('Loading...')).toBeInTheDocument();
+        });
+        it('enables Send button when there is postMind api call fails', async () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const sendButton = queryByText('Send');
+
+            const mockFunction = jest.fn().mockRejectedValueOnce( {
+               response: {
+                   data: {
+                       validationErrors: {
+                           content: 'It must have minimum 10 and maximum 5000 characters'
+                       }
+                   }
+               }
+            });
+
+            apiCalls.postMind = mockFunction;
+            fireEvent.click(sendButton);
+
+            await waitForDomChange();
+
+            expect(queryByText('Send')).not.toBeDisabled();
+        });
+        it('enables Cancel button when there is postMind api call fails', async () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const sendButton = queryByText('Send');
+
+            const mockFunction = jest.fn().mockRejectedValueOnce( {
+               response: {
+                   data: {
+                       validationErrors: {
+                           content: 'It must have minimum 10 and maximum 5000 characters'
+                       }
+                   }
+               }
+            });
+
+            apiCalls.postMind = mockFunction;
+            fireEvent.click(sendButton);
+
+            await waitForDomChange();
+
+            expect(queryByText('Cancel')).not.toBeDisabled();
+        });
+        it('enables Send button state after successful postMind action', async () => {
+            const {container, queryByText} = setup();
+            const textArea = container.querySelector('textarea');
+            fireEvent.focus(textArea);
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const sendButton = queryByText('Send');
+
+            apiCalls.postMind = jest.fn().mockResolvedValue({});
+            fireEvent.click(sendButton);
+            await waitForDomChange();
+
+            fireEvent.focus(textArea);
+            expect(queryByText('Send')).not.toBeDisabled();
+        });
     });
 });

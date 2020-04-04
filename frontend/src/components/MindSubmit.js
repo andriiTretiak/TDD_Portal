@@ -2,11 +2,13 @@ import React, {Component} from 'react';
 import ProfileImageWithDefault from "./ProfileImageWithDefault";
 import {connect} from 'react-redux';
 import * as apiCalls from '../api/apiCalls';
+import ButtonWithProgress from "./ButtonWithProgress";
 
 class MindSubmit extends Component {
     state = {
         focused: false,
-        content: undefined
+        content: undefined,
+        pendingApiCall: false
     };
 
     onChangeContent = (event) => {
@@ -29,13 +31,17 @@ class MindSubmit extends Component {
         const body ={
             content: this.state.content
         };
+        this.setState({pendingApiCall: true});
         apiCalls.postMind(body)
             .then(response => {
                 this.setState({
                     focused: false,
-                    content: ''
+                    content: '',
+                    pendingApiCall: false
                 })
-            });
+            }).catch(reason => {
+                this.setState({pendingApiCall: false})
+        });
     };
 
     render() {
@@ -57,15 +63,17 @@ class MindSubmit extends Component {
                     />
                     {this.state.focused && (
                         <div className="text-right mt-1">
-                            <button
+                            <ButtonWithProgress
                                 className="btn btn-success"
                                 onClick={this.onClickSend}
-                            >
-                                Send
-                            </button>
+                                disabled={this.state.pendingApiCall}
+                                pendingApiCall={this.state.pendingApiCall}
+                                text="Send"
+                            />
                             <button
                                 className="btn btn-light ml-1"
                                 onClick={this.onClickCancel}
+                                disabled={this.state.pendingApiCall}
                             >
                                 <i className="fas fa-times"/>
                                 Cancel
