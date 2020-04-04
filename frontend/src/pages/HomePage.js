@@ -1,11 +1,19 @@
 import React from "react";
 import UserList from "../components/UserList";
+import MindSubmit from "../components/MindSubmit";
 
-export class HomePage extends React.Component{
+export class HomePage extends React.Component {
     render() {
         return (
             <div data-testid="homepage">
-                <UserList />
+                <div className="row">
+                    <div className="col-8">
+                        <MindSubmit/>
+                    </div>
+                    <div className="col-4">
+                        <UserList/>
+                    </div>
+                </div>
             </div>
         )
     }
