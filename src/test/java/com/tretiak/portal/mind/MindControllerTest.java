@@ -16,6 +16,9 @@ import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -41,6 +44,9 @@ public class MindControllerTest {
 
     @Autowired
     private MindRepository mindRepository;
+
+    @PersistenceUnit
+    private EntityManagerFactory entityManagerFactory;
 
     @Before
     public void cleanup(){
@@ -158,13 +164,14 @@ public class MindControllerTest {
 
     @Test
     public void postMind_whenMindIsValidAndUserIsAuthorized_mindCanBeAccessedFromUserEntity(){
-        userService.save(createValidUser("user1"));
+        User user = userService.save(createValidUser("user1"));
         authenticate("user1");
         Mind mind = createValidMind();
         postMind(mind, Object.class);
 
-        User inDb = userRepository.findByUsername("user1");
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
 
+        User inDb = entityManager.find(User.class, user.getId());
         assertThat(inDb.getMinds().size()).isEqualTo(1);
     }
 
