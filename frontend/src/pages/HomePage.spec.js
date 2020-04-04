@@ -41,5 +41,23 @@ describe('HomePage', () => {
             const homePageDiv = queryByTestId('homepage');
             expect(homePageDiv).toBeInTheDocument();
         });
+        it('displays MindSubmit when user is logged in', () => {
+            const { container } = setup();
+            const textArea = container.querySelector('textarea');
+            expect(textArea).toBeInTheDocument();
+        });
+        it('does not display MindSubmit when user is not logged', () => {
+            const  notLoggedInState ={
+                id: 0,
+                username: '',
+                displayName: '',
+                password: '',
+                image: '',
+                isLoggedIn: false
+            };
+            const { container } = setup(notLoggedInState);
+            const textArea = container.querySelector('textarea');
+            expect(textArea).not.toBeInTheDocument();
+        });
     });
 });
