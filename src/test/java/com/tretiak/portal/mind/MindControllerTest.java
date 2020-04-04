@@ -15,6 +15,10 @@ import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static com.tretiak.portal.TestUtil.createValidMind;
 import static com.tretiak.portal.TestUtil.createValidUser;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -86,6 +90,57 @@ public class MindControllerTest {
         Mind inDb = mindRepository.findAll().get(0);
 
         assertThat(inDb.getTimestamp()).isNotNull();
+    }
+
+    @Test
+    public void postMind_whenMindContentIsNullAndUserIsAuthorized_receiveBadRequest(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = new Mind();
+        ResponseEntity<Object> response = postMind(mind, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void postMind_whenMindContentLess10CharactersAndUserIsAuthorized_receiveBadRequest(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = new Mind();
+        mind.setContent("123456789");
+        ResponseEntity<Object> response = postMind(mind, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void postMind_whenMindContentIs5000CharactersAndUserIsAuthorized_receiveOk(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = new Mind();
+        String veryLongString = IntStream.rangeClosed(1, 5000).mapToObj(value -> "x").collect(Collectors.joining());
+        mind.setContent(veryLongString);
+        ResponseEntity<Object> response = postMind(mind, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void postMind_whenMindContentMore5000CharactersAndUserIsAuthorized_receiveBadRequest(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = new Mind();
+        String veryLongString = IntStream.rangeClosed(1, 5001).mapToObj(value -> "x").collect(Collectors.joining());
+        mind.setContent(veryLongString);
+        ResponseEntity<Object> response = postMind(mind, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void postMind_whenMindContentIsNullAndUserIsAuthorized_receiveApiErrorWithValidationErrors(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = new Mind();
+        ResponseEntity<ApiError> response = postMind(mind, ApiError.class);
+        Map<String, String> validationErrors = response.getBody().getValidationErrors();
+        assertThat(validationErrors.get("content")).isNotNull();
     }
 
     private <T>ResponseEntity<T> postMind(Mind mind, Class<T> responseType) {
