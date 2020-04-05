@@ -1,5 +1,6 @@
 package com.tretiak.portal.mind;
 
+import com.tretiak.portal.mind.vm.MindVM;
 import com.tretiak.portal.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,10 +17,10 @@ public class MindService {
         this.mindRepository = mindRepository;
     }
 
-    void save(User user, Mind mind){
+    MindVM save(User user, Mind mind){
         mind.setTimestamp(new Date());
         mind.setUser(user);
-        mindRepository.save(mind);
+        return new MindVM(mindRepository.save(mind));
     }
 
     Page<Mind> getAllMinds(Pageable pageable) {

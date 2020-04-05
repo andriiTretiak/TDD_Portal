@@ -2,6 +2,7 @@ package com.tretiak.portal.mind;
 
 import com.tretiak.portal.TestPage;
 import com.tretiak.portal.error.ApiError;
+import com.tretiak.portal.mind.vm.MindVM;
 import com.tretiak.portal.user.User;
 import com.tretiak.portal.user.UserRepository;
 import com.tretiak.portal.user.UserService;
@@ -201,6 +202,24 @@ public class MindControllerTest {
         mindService.save(user, createValidMind());
         ResponseEntity<TestPage<Object>> response = getMinds(new ParameterizedTypeReference<TestPage<Object>>() {});
         assertThat(response.getBody().getTotalElements()).isEqualTo(3);
+    }
+
+    @Test
+    public void getMinds_whenThereAreMinds_receivePageWithMindVM(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        ResponseEntity<TestPage<MindVM>> response = getMinds(new ParameterizedTypeReference<TestPage<MindVM>>() {});
+        MindVM storeMind = response.getBody().getContent().get(0);
+        assertThat(storeMind.getUser().getUsername()).isEqualTo("user1");
+    }
+
+    @Test
+    public void postMind_whenMindIsValidAndUserIsAuthorized_receiveMindVm(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = createValidMind();
+        ResponseEntity<MindVM> response = postMind(mind, MindVM.class);
+        assertThat(response.getBody().getUser().getUsername()).isEqualTo("user1");
     }
 
     private <T>ResponseEntity<T> postMind(Mind mind, Class<T> responseType) {

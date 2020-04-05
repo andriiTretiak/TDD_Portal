@@ -1,5 +1,6 @@
 package com.tretiak.portal.mind;
 
+import com.tretiak.portal.mind.vm.MindVM;
 import com.tretiak.portal.shared.CurrentUser;
 import com.tretiak.portal.user.User;
 import org.springframework.data.domain.Page;
@@ -19,12 +20,12 @@ public class MindController {
     }
 
     @PostMapping("/minds")
-    void createMind(@Valid @RequestBody Mind mind, @CurrentUser User user){
-        mindService.save(user, mind);
+    MindVM createMind(@Valid @RequestBody Mind mind, @CurrentUser User user){
+        return mindService.save(user, mind);
     }
 
     @GetMapping("/minds")
-    Page<?> getAllMinds(Pageable pageable){
-        return mindService.getAllMinds(pageable);
+    Page<MindVM> getAllMinds(Pageable pageable){
+        return mindService.getAllMinds(pageable).map(MindVM::new);
     }
 }
