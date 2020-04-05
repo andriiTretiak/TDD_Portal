@@ -1,5 +1,6 @@
 package com.tretiak.portal.mind;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tretiak.portal.user.User;
 import lombok.Data;
 
@@ -25,5 +26,6 @@ public class Mind {
     private Date timestamp;
 
     @ManyToOne
+    @JsonIgnore
     private User user;
 }

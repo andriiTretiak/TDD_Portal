@@ -1,4 +1,4 @@
-package com.tretiak.portal.user;
+package com.tretiak.portal;
 
 import lombok.Data;
 import org.springframework.data.domain.Page;

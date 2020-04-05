@@ -1,5 +1,6 @@
 package com.tretiak.portal.user;
 
+import com.tretiak.portal.TestPage;
 import com.tretiak.portal.TestUtil;
 import com.tretiak.portal.configuration.AppConfiguration;
 import com.tretiak.portal.error.ApiError;

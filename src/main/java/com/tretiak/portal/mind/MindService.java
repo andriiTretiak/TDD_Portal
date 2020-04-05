@@ -1,6 +1,8 @@
 package com.tretiak.portal.mind;
 
 import com.tretiak.portal.user.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -18,5 +20,9 @@ public class MindService {
         mind.setTimestamp(new Date());
         mind.setUser(user);
         mindRepository.save(mind);
+    }
+
+    Page<Mind> getAllMinds(Pageable pageable) {
+        return mindRepository.findAll(pageable);
     }
 }

@@ -1,5 +1,6 @@
 package com.tretiak.portal.mind;
 
+import com.tretiak.portal.TestPage;
 import com.tretiak.portal.error.ApiError;
 import com.tretiak.portal.user.User;
 import com.tretiak.portal.user.UserRepository;
@@ -10,6 +11,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
@@ -47,6 +50,9 @@ public class MindControllerTest {
 
     @PersistenceUnit
     private EntityManagerFactory entityManagerFactory;
+
+    @Autowired
+    private MindService mindService;
 
     @Before
     public void cleanup(){
@@ -175,8 +181,34 @@ public class MindControllerTest {
         assertThat(inDb.getMinds().size()).isEqualTo(1);
     }
 
+    @Test
+    public void getMinds_whenThereAreNoMinds_receiveOk(){
+        ResponseEntity<Object> response = getMinds(new ParameterizedTypeReference<Object>() {});
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void getMinds_whenThereAreNoMinds_receivePageWithZeroItems(){
+        ResponseEntity<TestPage<Object>> response = getMinds(new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
+    public void getMinds_whenThereAreMinds_receivePageWithItems(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        ResponseEntity<TestPage<Object>> response = getMinds(new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(3);
+    }
+
     private <T>ResponseEntity<T> postMind(Mind mind, Class<T> responseType) {
         return testRestTemplate.postForEntity(API_1_0_MINDS, mind, responseType);
+    }
+
+    private <T>ResponseEntity<T> getMinds(ParameterizedTypeReference<T> responseType) {
+        return testRestTemplate.exchange(API_1_0_MINDS, HttpMethod.GET, null, responseType);
     }
 
     private void authenticate(String username) {
