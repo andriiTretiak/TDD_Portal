@@ -3,6 +3,7 @@ import * as apiCalls from '../api/apiCalls';
 import ProfileCard from "../components/ProfileCard";
 import {connect} from 'react-redux';
 import MindFeed from "../components/MindFeed";
+import Spinner from "../components/Spinner";
 
 export class UserPage extends React.Component {
 
@@ -128,13 +129,7 @@ export class UserPage extends React.Component {
     render() {
         let pageContent;
         if (this.state.isLoadingUser) {
-            pageContent = (
-                <div className="d-flex">
-                    <div className="spinner-border text-black-50 m-auto">
-                        <span className="sr-only">Loading...</span>
-                    </div>
-                </div>
-            )
+            pageContent = <Spinner />
         } else if (this.state.userNotFound) {
             pageContent = (
                 <div className="alert alert-danger text-center">
