@@ -44,6 +44,14 @@ const mockFailUpdateUser = {
     }
 };
 
+apiCalls.loadMinds = jest.fn().mockResolvedValue({
+    data: {
+        content: [],
+        number: 0,
+        size:3
+    }
+});
+
 const match = {
     params: {
         username: 'user1'

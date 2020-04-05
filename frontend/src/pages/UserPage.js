@@ -2,6 +2,7 @@ import React from "react";
 import * as apiCalls from '../api/apiCalls';
 import ProfileCard from "../components/ProfileCard";
 import {connect} from 'react-redux';
+import MindFeed from "../components/MindFeed";
 
 export class UserPage extends React.Component {
 
@@ -84,14 +85,14 @@ export class UserPage extends React.Component {
                     this.props.dispatch(action);
                 });
             }).catch((error) => {
-                let errors = {};
-                if(error.response.data.validationErrors){
-                    errors = error.response.data.validationErrors;
-                }
-                this.setState({
-                    pendingUpdateCall: false,
-                    errors
-                });
+            let errors = {};
+            if (error.response.data.validationErrors) {
+                errors = error.response.data.validationErrors;
+            }
+            this.setState({
+                pendingUpdateCall: false,
+                errors
+            });
         });
     };
 
@@ -161,10 +162,17 @@ export class UserPage extends React.Component {
         }
         return (
             <div data-testid="userpage">
-                {pageContent}
+                <div className="row">
+                    <div className="col">
+                        {pageContent}
+                    </div>
+                    <div className="col">
+                        <MindFeed user={this.props.match.params.username} />
+                    </div>
+                </div>
             </div>
         )
-    }
+    }Hom
 }
 
 UserPage.defaultProps = {

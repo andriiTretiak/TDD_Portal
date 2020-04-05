@@ -2,6 +2,7 @@ import React from "react";
 import UserList from "../components/UserList";
 import MindSubmit from "../components/MindSubmit";
 import {connect} from 'react-redux';
+import MindFeed from "../components/MindFeed";
 
 export class HomePage extends React.Component {
     render() {
@@ -10,6 +11,7 @@ export class HomePage extends React.Component {
                 <div className="row">
                     <div className="col-8">
                         {this.props.loggedInUser.isLoggedIn && <MindSubmit/>}
+                        <MindFeed />
                     </div>
                     <div className="col-4">
                         <UserList/>

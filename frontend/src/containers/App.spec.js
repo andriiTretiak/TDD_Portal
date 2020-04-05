@@ -14,6 +14,16 @@ apiCalls.listUsers = jest.fn().mockResolvedValue({
         size:3
     }
 });
+
+
+apiCalls.loadMinds = jest.fn().mockResolvedValue({
+    data: {
+        content: [],
+        number: 0,
+        size:3
+    }
+});
+
 apiCalls.getUser = jest.fn().mockResolvedValue({
     data: {
         id: 1,
