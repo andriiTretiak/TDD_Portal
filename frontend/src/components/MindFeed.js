@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import * as apiCalls from '../api/apiCalls';
 import Spinner from "./Spinner";
+import MindView from "./MindView";
 
 class MindFeed extends Component {
 
@@ -35,7 +36,7 @@ class MindFeed extends Component {
         }
         return <div>
             {this.state.page.content.map((mind) => {
-                return <span key={mind.id}>{mind.content}</span>
+                return <MindView key={mind.id} mind={mind}/>
             })}
         </div>
     }
