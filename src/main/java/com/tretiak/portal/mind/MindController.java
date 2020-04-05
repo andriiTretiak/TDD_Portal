@@ -28,4 +28,9 @@ public class MindController {
     Page<MindVM> getAllMinds(Pageable pageable){
         return mindService.getAllMinds(pageable).map(MindVM::new);
     }
+
+    @GetMapping("/users/{username}/minds")
+    Page<MindVM> getMindsOfUser(@PathVariable String username, Pageable pageable){
+        return mindService.getMindOfUser(username, pageable).map(MindVM::new);
+    }
 }

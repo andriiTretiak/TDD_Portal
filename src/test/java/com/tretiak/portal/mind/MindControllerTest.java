@@ -222,6 +222,67 @@ public class MindControllerTest {
         assertThat(response.getBody().getUser().getUsername()).isEqualTo("user1");
     }
 
+    @Test
+    public void getMindsOfUser_whenUserIsExists_receiveOk(){
+        userService.save(createValidUser("user1"));
+        ResponseEntity<Object> response = getMindsOfUser("user1", new ParameterizedTypeReference<Object>() {});
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void getMindsOfUser_whenUserDoesNotExist_receiveNotFound(){
+        ResponseEntity<Object> response = getMindsOfUser("unknown-username", new ParameterizedTypeReference<Object>() {});
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void getMindsOfUser_whenUserIsExists_receivePaigeWithZeroMinds(){
+        userService.save(createValidUser("user1"));
+        ResponseEntity<TestPage<Object>> response = getMindsOfUser("user1",
+                new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
+    public void getMindsOfUser_whenUserIsExistsWithMinds_receivePageWithMindVM(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        ResponseEntity<TestPage<MindVM>> response = getMindsOfUser("user1",
+                new ParameterizedTypeReference<TestPage<MindVM>>() {});
+        MindVM storeMind = response.getBody().getContent().get(0);
+        assertThat(storeMind.getUser().getUsername()).isEqualTo("user1");
+    }
+
+    @Test
+    public void getMindsOfUser_whenUserIsExistsWithMultipleMinds_receivePageWithMatchingMindsCount(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        ResponseEntity<TestPage<MindVM>> response = getMindsOfUser("user1",
+                new ParameterizedTypeReference<TestPage<MindVM>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(3);
+    }
+
+    @Test
+    public void getMindsOfUser_whenMultipleUserIsExistsWithMultipleMinds_receivePageWithMatchingMindsCount(){
+        User userWithThreeMinds = userService.save(createValidUser("user1"));
+        IntStream.rangeClosed(1,3).forEach(value -> {
+            mindService.save(userWithThreeMinds, createValidMind());
+        });
+        User userWithFiveMinds = userService.save(createValidUser("user2"));
+        IntStream.rangeClosed(1,5).forEach(value -> {
+            mindService.save(userWithFiveMinds, createValidMind());
+        });
+        ResponseEntity<TestPage<MindVM>> response = getMindsOfUser(userWithFiveMinds.getUsername(),
+                new ParameterizedTypeReference<TestPage<MindVM>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(5);
+    }
+
+    private <T>ResponseEntity<T> getMindsOfUser(String username, ParameterizedTypeReference<T> responseType) {
+        String path = "/api/1.0/users/"+username+"/minds";
+        return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+    }
     private <T>ResponseEntity<T> postMind(Mind mind, Class<T> responseType) {
         return testRestTemplate.postForEntity(API_1_0_MINDS, mind, responseType);
     }
