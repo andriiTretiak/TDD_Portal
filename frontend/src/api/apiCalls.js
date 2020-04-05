@@ -31,3 +31,10 @@ export const updateUser = (userId, body) => {
 export const postMind = (mind) => {
     return axios.post('/api/1.0/minds', mind);
 };
+
+export const loadMinds = (username) => {
+    const basePath = username
+        ? `/api/1.0/users/${username}/minds`
+        : '/api/1.0/minds';
+    return axios.get(basePath + '?page=0&size=5&sort=id,desc');
+};
