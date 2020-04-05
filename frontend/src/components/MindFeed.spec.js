@@ -2,9 +2,14 @@ import React from "react";
 import {render, waitForDomChange, waitForElement} from "@testing-library/react";
 import MindFeed from './MindFeed';
 import * as apiCalls from '../api/apiCalls';
+import {MemoryRouter} from "react-router-dom";
 
 const setup = (props) => {
-    return render(<MindFeed {...props}/>);
+    return render(
+        <MemoryRouter>
+            <MindFeed {...props}/>
+        </MemoryRouter>
+       );
 };
 
 const mockEmptyResponse = {

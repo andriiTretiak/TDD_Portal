@@ -1,6 +1,7 @@
 import React from "react";
 import {render} from "@testing-library/react";
 import MindView from "./MindView";
+import {MemoryRouter} from "react-router-dom";
 
 const setup = () => {
     const oneMinuteAgo = 60 * 1000;
@@ -16,7 +17,11 @@ const setup = () => {
             image: 'profile1.png'
         }
     };
-    return render(<MindView mind={mind} />);
+    return render(
+        <MemoryRouter>
+            <MindView mind={mind} />
+        </MemoryRouter>
+       );
 };
 
 describe('MindView', () => {
@@ -37,6 +42,11 @@ describe('MindView', () => {
         it('displays relative time', () => {
             const { queryByText } = setup();
             expect(queryByText('1 minute ago')).toBeInTheDocument();
+        });
+        it('has link to user page', () => {
+            const { container } = setup();
+            const anchor = container.querySelector('a');
+            expect(anchor.getAttribute('href')).toBe('/user1');
         });
     });
 });
