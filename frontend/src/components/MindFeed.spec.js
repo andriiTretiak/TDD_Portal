@@ -40,6 +40,28 @@ const mockSuccessGetMindsSinglePage = {
         totalPages: 1
     }
 };
+const mockSuccessGetMindsFirstOfMultiPage = {
+    data: {
+        content: [
+            {
+                id: 10,
+                content: 'This is the last mind',
+                date: 1561294668539,
+                user: {
+                    id: 1,
+                    username: 'user1',
+                    displayName: 'display1',
+                    image: 'profile1.png'
+                }
+            }
+        ],
+        number: 0,
+        first: true,
+        last: false,
+        size: 5,
+        totalPages: 2
+    }
+};
 
 describe('MindFeed', () => {
     describe('Lifecycle', () => {
@@ -91,6 +113,12 @@ describe('MindFeed', () => {
             const { queryByText } = setup();
             const mindContent = await waitForElement(() => queryByText('This is the last mind'));
             expect(mindContent).toBeInTheDocument();
+        });
+        it('displays load more when there are next pages', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            const { queryByText } = setup();
+            const loadMore = await waitForElement(() => queryByText('Load More'));
+            expect(loadMore).toBeInTheDocument();
         });
     });
 });

@@ -38,6 +38,11 @@ class MindFeed extends Component {
             {this.state.page.content.map((mind) => {
                 return <MindView key={mind.id} mind={mind}/>
             })}
+            {this.state.page.last === false && (
+                <div className="card card-header text-center">
+                    Load More
+                </div>
+            )}
         </div>
     }
 }
