@@ -37,4 +37,9 @@ public class MindService {
     Page<Mind> getOldMinds(long id, Pageable pageable) {
         return mindRepository.findByIdLessThan(id, pageable);
     }
+
+    Page<Mind> getOldMindsForUser(String username, long id, Pageable pageable) {
+        User inDb = userService.getByUsername(username);
+        return mindRepository.findByIdLessThanAndUser(id, inDb, pageable);
+    }
 }

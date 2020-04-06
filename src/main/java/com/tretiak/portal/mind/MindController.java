@@ -38,4 +38,9 @@ public class MindController {
     Page<MindVM> getMindsRelative(@PathVariable long id, Pageable pageable){
         return mindService.getOldMinds(id, pageable).map(MindVM::new);
     }
+
+    @GetMapping("/users/{username}/minds/{id:[0-9]+}")
+    Page<MindVM> getMindsRelativeForUser(@PathVariable String username, @PathVariable long id, Pageable pageable){
+        return mindService.getOldMindsForUser(username, id, pageable).map(MindVM::new);
+    }
 }
