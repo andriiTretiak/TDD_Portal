@@ -279,6 +279,43 @@ public class MindControllerTest {
         assertThat(response.getBody().getTotalElements()).isEqualTo(5);
     }
 
+    @Test
+    public void getOldMinds_whenThereAreNoMinds_receiveOk(){
+        ResponseEntity<Object> response = getOldMinds(5, new ParameterizedTypeReference<Object>() {});
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void getOldMinds_whenThereAreMinds_receivePageWithItemsProvidedId(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        Mind fourth = mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        ResponseEntity<TestPage<Object>> response = getOldMinds(fourth.getId(),
+                new ParameterizedTypeReference<TestPage<Object>>() {});
+        assertThat(response.getBody().getTotalElements()).isEqualTo(3);
+    }
+
+    @Test
+    public void getOldMinds_whenThereAreMinds_receivePageWithMindVMBeforeProvidedId(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        Mind fourth = mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        ResponseEntity<TestPage<MindVM>> response = getOldMinds(fourth.getId(),
+                new ParameterizedTypeReference<TestPage<MindVM>>() {});
+        assertThat(response.getBody().getContent().get(0).getDate()).isGreaterThan(0);
+    }
+
+    private <T>ResponseEntity<T> getOldMinds(long mindId, ParameterizedTypeReference<T> responseType) {
+        String path = API_1_0_MINDS + "/" + mindId+"?direction=before&page=0&size=5&sort=id,desc";
+        return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+    }
+
     private <T>ResponseEntity<T> getMindsOfUser(String username, ParameterizedTypeReference<T> responseType) {
         String path = "/api/1.0/users/"+username+"/minds";
         return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);

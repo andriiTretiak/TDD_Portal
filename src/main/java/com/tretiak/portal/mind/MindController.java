@@ -21,7 +21,7 @@ public class MindController {
 
     @PostMapping("/minds")
     MindVM createMind(@Valid @RequestBody Mind mind, @CurrentUser User user){
-        return mindService.save(user, mind);
+        return new MindVM(mindService.save(user, mind));
     }
 
     @GetMapping("/minds")
@@ -32,5 +32,10 @@ public class MindController {
     @GetMapping("/users/{username}/minds")
     Page<MindVM> getMindsOfUser(@PathVariable String username, Pageable pageable){
         return mindService.getMindOfUser(username, pageable).map(MindVM::new);
+    }
+
+    @GetMapping("/minds/{id:[0-9]+}")
+    Page<MindVM> getMindsRelative(@PathVariable long id, Pageable pageable){
+        return mindService.getOldMinds(id, pageable).map(MindVM::new);
     }
 }

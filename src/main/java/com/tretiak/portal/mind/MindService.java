@@ -1,6 +1,5 @@
 package com.tretiak.portal.mind;
 
-import com.tretiak.portal.mind.vm.MindVM;
 import com.tretiak.portal.user.User;
 import com.tretiak.portal.user.UserService;
 import org.springframework.data.domain.Page;
@@ -20,10 +19,10 @@ public class MindService {
         this.userService = userService;
     }
 
-    MindVM save(User user, Mind mind){
+    Mind save(User user, Mind mind){
         mind.setTimestamp(new Date());
         mind.setUser(user);
-        return new MindVM(mindRepository.save(mind));
+        return mindRepository.save(mind);
     }
 
     Page<Mind> getAllMinds(Pageable pageable) {
@@ -33,5 +32,9 @@ public class MindService {
     Page<Mind> getMindOfUser(String username, Pageable pageable) {
         User inDb = userService.getByUsername(username);
         return mindRepository.findByUser(inDb, pageable);
+    }
+
+    Page<Mind> getOldMinds(long id, Pageable pageable) {
+        return mindRepository.findByIdLessThan(id, pageable);
     }
 }
