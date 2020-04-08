@@ -52,4 +52,13 @@ public class MindService {
         User inDb = userService.getByUsername(username);
         return mindRepository.findByIdGreaterThanAndUser(id, inDb, pageable.getSort());
     }
+
+    long getNewMindsCount(long id) {
+        return mindRepository.countByIdGreaterThan(id);
+    }
+
+    long getNewMindsCountOfUser(long id, String username) {
+        User inDb = userService.getByUsername(username);
+        return mindRepository.countByIdGreaterThanAndUser(id, inDb);
+    }
 }

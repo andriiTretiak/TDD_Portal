@@ -448,6 +448,42 @@ public class MindControllerTest {
         assertThat(response.getBody().size()).isEqualTo(0);
     }
 
+    @Test
+    public void getNewMindsCount_whenThereAreMinds_receiveCountAfterProvidedId(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        Mind fourth = mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        ResponseEntity<Map<String, Long>> response = getNewMindsCount(fourth.getId(),
+                new ParameterizedTypeReference<Map<String, Long>>() {});
+        assertThat(response.getBody().get("count")).isEqualTo(1);
+    }
+
+    @Test
+    public void getNewMindsCountOfUser_whenUserExistThereAreMinds_receiveCountAfterProvidedId(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        Mind fourth = mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        ResponseEntity<Map<String, Long>> response = getNewMindsCountOfUser(fourth.getId(), user.getUsername(),
+                new ParameterizedTypeReference<Map<String, Long>>() {});
+        assertThat(response.getBody().get("count")).isEqualTo(1);
+    }
+
+    private <T>ResponseEntity<T> getNewMindsCount(long mindId, ParameterizedTypeReference<T> responseType) {
+        String path = API_1_0_MINDS + "/" + mindId+"?direction=after&count=true";
+        return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+    }
+
+    private <T>ResponseEntity<T> getNewMindsCountOfUser(long mindId, String username, ParameterizedTypeReference<T> responseType) {
+        String path = "/api/1.0/users/"+username+"/minds" + "/" + mindId+"?direction=after&count=true";
+        return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+    }
+
     private <T>ResponseEntity<T> getNewMinds(long mindId, ParameterizedTypeReference<T> responseType) {
         String path = API_1_0_MINDS + "/" + mindId+"?direction=after&sort=id,desc";
         return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
