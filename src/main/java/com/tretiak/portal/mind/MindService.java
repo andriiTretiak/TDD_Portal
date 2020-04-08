@@ -4,6 +4,7 @@ import com.tretiak.portal.user.User;
 import com.tretiak.portal.user.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -20,7 +21,7 @@ public class MindService {
         this.userService = userService;
     }
 
-    Mind save(User user, Mind mind){
+    Mind save(User user, Mind mind) {
         mind.setTimestamp(new Date());
         mind.setUser(user);
         return mindRepository.save(mind);
@@ -35,30 +36,42 @@ public class MindService {
         return mindRepository.findByUser(inDb, pageable);
     }
 
-    Page<Mind> getOldMinds(long id, Pageable pageable) {
-        return mindRepository.findByIdLessThan(id, pageable);
+    Page<Mind> getOldMinds(long id, String username, Pageable pageable) {
+        Specification<Mind> spec = Specification.where(idLessThan(id));
+        if (username != null) {
+            User inDb = userService.getByUsername(username);
+            spec = spec.and(userId(inDb));
+        }
+        return mindRepository.findAll(spec, pageable);
     }
 
-    Page<Mind> getOldMindsForUser(String username, long id, Pageable pageable) {
-        User inDb = userService.getByUsername(username);
-        return mindRepository.findByIdLessThanAndUser(id, inDb, pageable);
+    List<Mind> getNewMinds(long id, String username, Pageable pageable) {
+        Specification<Mind> spec = Specification.where(idGreaterThan(id));
+        if (username != null) {
+            User inDb = userService.getByUsername(username);
+            spec = spec.and(userId(inDb));
+        }
+        return mindRepository.findAll(spec, pageable.getSort());
     }
 
-    List<Mind> getNewMinds(long id, Pageable pageable) {
-        return mindRepository.findByIdGreaterThan(id, pageable.getSort());
+    long getNewMindsCount(long id, String username) {
+        Specification<Mind> spec = Specification.where(idGreaterThan(id));
+        if (username != null) {
+            User inDb = userService.getByUsername(username);
+            spec = spec.and(userId(inDb));
+        }
+        return mindRepository.count(spec);
     }
 
-    List<Mind> getNewMindsOfUser(String username, long id, Pageable pageable) {
-        User inDb = userService.getByUsername(username);
-        return mindRepository.findByIdGreaterThanAndUser(id, inDb, pageable.getSort());
+    private Specification<Mind> userId(User user) {
+        return (Specification<Mind>) (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(root.get("user"), user);
     }
 
-    long getNewMindsCount(long id) {
-        return mindRepository.countByIdGreaterThan(id);
+    private Specification<Mind> idLessThan(long id) {
+        return (Specification<Mind>) (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.lessThan(root.get("id"), id);
     }
 
-    long getNewMindsCountOfUser(long id, String username) {
-        User inDb = userService.getByUsername(username);
-        return mindRepository.countByIdGreaterThanAndUser(id, inDb);
+    private Specification<Mind> idGreaterThan(long id) {
+        return (Specification<Mind>) (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.greaterThan(root.get("id"), id);
     }
 }

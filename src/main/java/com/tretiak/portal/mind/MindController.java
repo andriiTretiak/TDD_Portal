@@ -38,37 +38,38 @@ public class MindController {
         return mindService.getMindOfUser(username, pageable).map(MindVM::new);
     }
 
-    @GetMapping("/minds/{id:[0-9]+}")
-    ResponseEntity<?> getMindsRelative(@PathVariable long id, Pageable pageable,
+    @GetMapping({"/minds/{id:[0-9]+}", "/users/{username}/minds/{id:[0-9]+}"})
+    ResponseEntity<?> getMindsRelative(@PathVariable long id, @PathVariable(required = false) String username,
+                                       Pageable pageable,
                                        @RequestParam(name = "direction", defaultValue = "after") String direction,
                                        @RequestParam(name = "count", defaultValue = "false", required = false) boolean count) {
         if (!direction.equalsIgnoreCase("after")) {
-            return ResponseEntity.ok(mindService.getOldMinds(id, pageable).map(MindVM::new));
+            return ResponseEntity.ok(mindService.getOldMinds(id, username, pageable).map(MindVM::new));
         }
         if (count) {
-            long newMindsCount = mindService.getNewMindsCount(id);
+            long newMindsCount = mindService.getNewMindsCount(id, username);
             return ResponseEntity.ok(Collections.singletonMap("count", newMindsCount));
         }
-        List<MindVM> newMinds = mindService.getNewMinds(id, pageable).stream()
+        List<MindVM> newMinds = mindService.getNewMinds(id, username, pageable).stream()
                 .map(MindVM::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(newMinds);
     }
 
-    @GetMapping("/users/{username}/minds/{id:[0-9]+}")
-    ResponseEntity<?> getMindsRelativeForUser(@PathVariable String username, @PathVariable long id, Pageable pageable,
-                                              @RequestParam(name = "direction", defaultValue = "after") String direction,
-                                              @RequestParam(name = "count", defaultValue = "false", required = false) boolean count) {
-        if (!direction.equalsIgnoreCase("after")) {
-            return ResponseEntity.ok(mindService.getOldMindsForUser(username, id, pageable).map(MindVM::new));
-        }
-        if(count){
-            long newMindsCountOfUser = mindService.getNewMindsCountOfUser(id, username);
-            return ResponseEntity.ok(Collections.singletonMap("count", newMindsCountOfUser));
-        }
-        List<MindVM> newMinds = mindService.getNewMindsOfUser(username, id, pageable).stream()
-                .map(MindVM::new)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(newMinds);
-    }
+//    @GetMapping("/users/{username}/minds/{id:[0-9]+}")
+//    ResponseEntity<?> getMindsRelativeForUser(@PathVariable String username, @PathVariable long id, Pageable pageable,
+//                                              @RequestParam(name = "direction", defaultValue = "after") String direction,
+//                                              @RequestParam(name = "count", defaultValue = "false", required = false) boolean count) {
+//        if (!direction.equalsIgnoreCase("after")) {
+//            return ResponseEntity.ok(mindService.getOldMindsForUser(username, id, pageable).map(MindVM::new));
+//        }
+//        if(count){
+//            long newMindsCountOfUser = mindService.getNewMindsCountOfUser(id, username);
+//            return ResponseEntity.ok(Collections.singletonMap("count", newMindsCountOfUser));
+//        }
+//        List<MindVM> newMinds = mindService.getNewMindsOfUser(username, id, pageable).stream()
+//                .map(MindVM::new)
+//                .collect(Collectors.toList());
+//        return ResponseEntity.ok(newMinds);
+//    }
 }
