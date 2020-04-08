@@ -23,6 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -364,6 +365,37 @@ public class MindControllerTest {
         ResponseEntity<TestPage<MindVM>> response = getOldMindsOfUser(fourth.getId(), "user2",
                 new ParameterizedTypeReference<TestPage<MindVM>>() {});
         assertThat(response.getBody().getTotalElements()).isEqualTo(0);
+    }
+
+    @Test
+    public void getNewMinds_whenThereAreMinds_receiveListOfItemsAfterProvidedId(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        Mind fourth = mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        ResponseEntity<List<Object>> response = getNewMinds(fourth.getId(),
+                new ParameterizedTypeReference<List<Object>>() {});
+        assertThat(response.getBody().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void getNewMinds_whenThereAreMinds_receiveListOfMindVMAfterProvidedId(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        Mind fourth = mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        ResponseEntity<List<MindVM>> response = getNewMinds(fourth.getId(),
+                new ParameterizedTypeReference<List<MindVM>>() {});
+        assertThat(response.getBody().get(0).getDate()).isGreaterThan(0);
+    }
+
+    private <T>ResponseEntity<T> getNewMinds(long mindId, ParameterizedTypeReference<T> responseType) {
+        String path = API_1_0_MINDS + "/" + mindId+"?direction=after&sort=id,desc";
+        return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
     }
 
     private <T>ResponseEntity<T> getOldMinds(long mindId, ParameterizedTypeReference<T> responseType) {

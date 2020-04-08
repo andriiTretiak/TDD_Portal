@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class MindService {
@@ -41,5 +42,9 @@ public class MindService {
     Page<Mind> getOldMindsForUser(String username, long id, Pageable pageable) {
         User inDb = userService.getByUsername(username);
         return mindRepository.findByIdLessThanAndUser(id, inDb, pageable);
+    }
+
+    List<Mind> getNewMinds(long id, Pageable pageable) {
+        return mindRepository.findByIdGreaterThan(id, pageable.getSort());
     }
 }

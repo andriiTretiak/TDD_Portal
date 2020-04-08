@@ -5,9 +5,12 @@ import com.tretiak.portal.shared.CurrentUser;
 import com.tretiak.portal.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/1.0")
@@ -35,12 +38,19 @@ public class MindController {
     }
 
     @GetMapping("/minds/{id:[0-9]+}")
-    Page<MindVM> getMindsRelative(@PathVariable long id, Pageable pageable){
-        return mindService.getOldMinds(id, pageable).map(MindVM::new);
+    ResponseEntity<?> getMindsRelative(@PathVariable long id, Pageable pageable,
+                                       @RequestParam(name = "direction", defaultValue = "after") String direction){
+        if(!direction.equalsIgnoreCase("after")){
+            return ResponseEntity.ok(mindService.getOldMinds(id, pageable).map(MindVM::new));
+        }
+        List<MindVM> newMinds = mindService.getNewMinds(id, pageable).stream()
+                .map(MindVM::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(newMinds);
     }
 
     @GetMapping("/users/{username}/minds/{id:[0-9]+}")
-    Page<MindVM> getMindsRelativeForUser(@PathVariable String username, @PathVariable long id, Pageable pageable){
+    Page<?> getMindsRelativeForUser(@PathVariable String username, @PathVariable long id, Pageable pageable){
         return mindService.getOldMindsForUser(username, id, pageable).map(MindVM::new);
     }
 }
