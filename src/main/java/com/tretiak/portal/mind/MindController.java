@@ -50,7 +50,14 @@ public class MindController {
     }
 
     @GetMapping("/users/{username}/minds/{id:[0-9]+}")
-    Page<?> getMindsRelativeForUser(@PathVariable String username, @PathVariable long id, Pageable pageable){
-        return mindService.getOldMindsForUser(username, id, pageable).map(MindVM::new);
+    ResponseEntity<?> getMindsRelativeForUser(@PathVariable String username, @PathVariable long id, Pageable pageable,
+                                    @RequestParam(name = "direction", defaultValue = "after") String direction){
+        if(!direction.equalsIgnoreCase("after")){
+            return ResponseEntity.ok(mindService.getOldMindsForUser(username, id, pageable).map(MindVM::new));
+        }
+        List<MindVM> newMinds = mindService.getNewMindsOfUser(username, id, pageable).stream()
+                .map(MindVM::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(newMinds);
     }
 }

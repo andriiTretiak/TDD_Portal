@@ -393,8 +393,68 @@ public class MindControllerTest {
         assertThat(response.getBody().get(0).getDate()).isGreaterThan(0);
     }
 
+    @Test
+    public void getNewMindsOfUser_whenUserExistThereAreNoMinds_receiveOk(){
+        User user = userService.save(createValidUser("user1"));
+        ResponseEntity<Object> response = getNewMindsOfUser(5, user.getUsername(),
+                new ParameterizedTypeReference<Object>() {});
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void getNewMindsOfUser_whenUserExistThereAreMinds_receiveListWithItemsAfterProvidedId(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        Mind fourth = mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        ResponseEntity<List<Object>> response = getNewMindsOfUser(fourth.getId(), user.getUsername(),
+                new ParameterizedTypeReference<List<Object>>() {});
+        assertThat(response.getBody().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void getNewMindsOfUser_whenUserExistThereAreMinds_receiveListWithMindVMAfterProvidedId(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        Mind fourth = mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        ResponseEntity<List<MindVM>> response = getNewMindsOfUser(fourth.getId(), user.getUsername(),
+                new ParameterizedTypeReference<List<MindVM>>() {});
+        assertThat(response.getBody().get(0).getDate()).isGreaterThan(0);
+    }
+
+    @Test
+    public void getNewMindsOfUser_whenUserNotExistThereAreNoMinds_receiveNotFound(){
+        ResponseEntity<Object> response = getNewMindsOfUser(5, "unknown-username",
+                new ParameterizedTypeReference<Object>() {});
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void getNewMindsOfUser_whenUserExistThereAreNoMinds_receiveListWithZeroItemsAfterProvidedId(){
+        User user = userService.save(createValidUser("user1"));
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        Mind fourth = mindService.save(user, createValidMind());
+        mindService.save(user, createValidMind());
+        userService.save(createValidUser("user2"));
+        ResponseEntity<List<MindVM>> response = getNewMindsOfUser(fourth.getId(), "user2",
+                new ParameterizedTypeReference<List<MindVM>>() {});
+        assertThat(response.getBody().size()).isEqualTo(0);
+    }
+
     private <T>ResponseEntity<T> getNewMinds(long mindId, ParameterizedTypeReference<T> responseType) {
         String path = API_1_0_MINDS + "/" + mindId+"?direction=after&sort=id,desc";
+        return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
+    }
+
+    private <T>ResponseEntity<T> getNewMindsOfUser(long mindId, String username, ParameterizedTypeReference<T> responseType) {
+        String path = "/api/1.0/users/"+username+"/minds" + "/" + mindId+"?direction=after&sort=id,desc";
         return testRestTemplate.exchange(path, HttpMethod.GET, null, responseType);
     }
 

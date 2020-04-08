@@ -47,4 +47,9 @@ public class MindService {
     List<Mind> getNewMinds(long id, Pageable pageable) {
         return mindRepository.findByIdGreaterThan(id, pageable.getSort());
     }
+
+    List<Mind> getNewMindsOfUser(String username, long id, Pageable pageable) {
+        User inDb = userService.getByUsername(username);
+        return mindRepository.findByIdGreaterThanAndUser(id, inDb, pageable.getSort());
+    }
 }

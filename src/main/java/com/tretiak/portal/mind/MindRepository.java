@@ -13,4 +13,5 @@ public interface MindRepository extends JpaRepository<Mind, Long> {
     Page<Mind> findByIdLessThan(long id, Pageable pageable);
     List<Mind> findByIdGreaterThan(long id, Sort sort);
     Page<Mind> findByIdLessThanAndUser(long id, User user, Pageable pageable);
+    List<Mind> findByIdGreaterThanAndUser(long id, User user, Sort sort);
 }
