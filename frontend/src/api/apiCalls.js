@@ -38,3 +38,24 @@ export const loadMinds = (username) => {
         : '/api/1.0/minds';
     return axios.get(basePath + '?page=0&size=5&sort=id,desc');
 };
+
+export const loadOldMinds = (mindId, username) => {
+    const basePath = username
+        ? `/api/1.0/users/${username}/minds/${mindId}`
+        : `/api/1.0/minds/${mindId}`;
+    return axios.get(basePath + '?direction=before&page=0&size=5&sort=id,desc');
+};
+
+export const loadNewMinds = (mindId, username) => {
+    const basePath = username
+        ? `/api/1.0/users/${username}/minds/${mindId}`
+        : `/api/1.0/minds/${mindId}`;
+    return axios.get(basePath + '?direction=after&sort=id,desc');
+};
+
+export const loadNewMindsCount = (mindId, username) => {
+    const basePath = username
+        ? `/api/1.0/users/${username}/minds/${mindId}`
+        : `/api/1.0/minds/${mindId}`;
+    return axios.get(basePath + '?direction=after&count=true');
+};

@@ -88,4 +88,46 @@ describe('apiCalls', () => {
             expect(mockGetMinds).toHaveBeenCalledWith('/api/1.0/users/user1/minds?page=0&size=5&sort=id,desc');
         });
     });
+    describe('loadOldMinds', () => {
+        it('calls /api/1.0/minds/5?direction=before&page=0&size=5&sort=id,desc when no param provided', () => {
+            const mockGetMinds = jest.fn();
+            axios.get = mockGetMinds;
+            apiCalls.loadOldMinds(5);
+            expect(mockGetMinds).toHaveBeenCalledWith('/api/1.0/minds/5?direction=before&page=0&size=5&sort=id,desc');
+        });
+        it('calls /api/1.0/users/user1/minds/5?direction=before&page=0&size=5&sort=id,desc when user param provided', () => {
+            const mockGetMinds = jest.fn();
+            axios.get = mockGetMinds;
+            apiCalls.loadOldMinds(5, 'user1');
+            expect(mockGetMinds).toHaveBeenCalledWith('/api/1.0/users/user1/minds/5?direction=before&page=0&size=5&sort=id,desc');
+        });
+    });
+    describe('loadNewMinds', () => {
+        it('calls /api/1.0/minds/5?direction=after&sort=id,desc when no param provided', () => {
+            const mockGetMinds = jest.fn();
+            axios.get = mockGetMinds;
+            apiCalls.loadNewMinds(5);
+            expect(mockGetMinds).toHaveBeenCalledWith('/api/1.0/minds/5?direction=after&sort=id,desc');
+        });
+        it('calls /api/1.0/users/user1/minds/5?direction=after&sort=id,desc when user param provided', () => {
+            const mockGetMinds = jest.fn();
+            axios.get = mockGetMinds;
+            apiCalls.loadNewMinds(5, 'user1');
+            expect(mockGetMinds).toHaveBeenCalledWith('/api/1.0/users/user1/minds/5?direction=after&sort=id,desc');
+        });
+    });
+    describe('loadNewMindsCount', () => {
+        it('calls /api/1.0/minds/5?direction=after&count=true when no param provided', () => {
+            const mockGetMinds = jest.fn();
+            axios.get = mockGetMinds;
+            apiCalls.loadNewMindsCount(5);
+            expect(mockGetMinds).toHaveBeenCalledWith('/api/1.0/minds/5?direction=after&count=true');
+        });
+        it('calls /api/1.0/users/user1/minds/5?direction=after&count=true when user param provided', () => {
+            const mockGetMinds = jest.fn();
+            axios.get = mockGetMinds;
+            apiCalls.loadNewMindsCount(5, 'user1');
+            expect(mockGetMinds).toHaveBeenCalledWith('/api/1.0/users/user1/minds/5?direction=after&count=true');
+        });
+    });
 });
