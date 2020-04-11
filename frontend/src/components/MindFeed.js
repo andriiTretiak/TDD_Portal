@@ -10,7 +10,9 @@ class MindFeed extends Component {
             content: []
         },
         isLoadingMinds: false,
-        newMindsCount: 0
+        newMindsCount: 0,
+        isLoadOldMinds: false,
+        isLoadNewMinds: false
     };
 
     componentDidMount() {
@@ -49,13 +51,21 @@ class MindFeed extends Component {
             return;
         }
         const mindAtBottom = minds[minds.length - 1];
+        this.setState({isLoadOldMinds: true});
         apiCalls.loadOldMinds(mindAtBottom.id, this.props.user)
             .then((value) => {
                 const page = {...this.state.page};
                 page.content = [...page.content, ...value.data.content];
                 page.last = value.data.last;
-                this.setState({page});
+                this.setState({
+                    page,
+                    isLoadOldMinds: false
+                });
+            }).catch(reason => {
+            this.setState({
+                isLoadOldMinds: false
             });
+        });
     };
 
     onClickLoadNew = () => {
@@ -64,15 +74,21 @@ class MindFeed extends Component {
         if (minds.length > 0) {
             topMindId = minds[0].id;
         }
+        this.setState({isLoadNewMinds: true});
         apiCalls.loadNewMinds(topMindId, this.props.user)
             .then(value => {
                 const page = {...this.state.page};
                 page.content = [...value.data, ...page.content];
                 this.setState({
                     page,
-                    newMindsCount: 0
+                    newMindsCount: 0,
+                    isLoadNewMinds: false
                 });
+            }).catch(reason => {
+            this.setState({
+                isLoadNewMinds: false
             });
+        });
     };
 
     render() {
@@ -90,10 +106,10 @@ class MindFeed extends Component {
             {this.state.newMindsCount > 0 && (
                 <div
                     className="card card-header text-center"
-                    onClick={this.onClickLoadNew}
-                    style={{cursor: 'pointer'}}
+                    onClick={!this.state.isLoadNewMinds && this.onClickLoadNew}
+                    style={{cursor: this.state.isLoadNewMinds ? 'not-allowed' : 'pointer'}}
                 >
-                    {this.state.newMindsCount === 1 ? 'There is 1 new mind'
+                    {this.state.isLoadNewMinds ? <Spinner/> : this.state.newMindsCount === 1 ? 'There is 1 new mind'
                         : `There are ${this.state.newMindsCount} new minds`}
                 </div>
             )}
@@ -103,10 +119,10 @@ class MindFeed extends Component {
             {this.state.page.last === false && (
                 <div
                     className="card card-header text-center"
-                    onClick={this.onClickLoadMore}
-                    style={{cursor: 'pointer'}}
+                    onClick={!this.state.isLoadOldMinds && this.onClickLoadMore}
+                    style={{cursor: this.state.isLoadOldMinds ? 'not-allowed' : 'pointer'}}
                 >
-                    Load More
+                    {this.state.isLoadOldMinds ? <Spinner/> : 'Load More'}
                 </div>
             )}
         </div>

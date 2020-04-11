@@ -79,6 +79,28 @@ const mockSuccessGetNewMindsList = {
         }
     ]
 };
+const mockSuccessGetMindsMiddleOfMultiPage = {
+    data: {
+        content: [
+            {
+                id: 5,
+                content: 'This mind is in middle page',
+                date: 1561294668539,
+                user: {
+                    id: 1,
+                    username: 'user1',
+                    displayName: 'display1',
+                    image: 'profile1.png'
+                }
+            }
+        ],
+        number: 0,
+        first: false,
+        last: false,
+        size: 5,
+        totalPages: 2
+    }
+};
 const mockSuccessGetMindsFirstOfMultiPage = {
     data: {
         content: [
@@ -357,6 +379,145 @@ describe('MindFeed', () => {
             fireEvent.click(newMindsCount);
             await waitForElement(() => queryByText('This is the newest mind'));
             expect(queryByText('There is 1 new mind')).not.toBeInTheDocument();
+            useRealIntervals();
+        });
+        it('does not allow loadOldMinds when there is an active api call about it', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadOldMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsLastOfMultiPage);
+            const {queryByText} = setup();
+            const loadMore = await waitForElement(() => queryByText('Load More'));
+            fireEvent.click(loadMore);
+            fireEvent.click(loadMore);
+            expect(apiCalls.loadOldMinds).toHaveBeenCalledTimes(1);
+        });
+        it('replace Load More with spinner when there is an active api call about it', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadOldMinds = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve(mockSuccessGetMindsLastOfMultiPage);
+                    }, 300);
+                });
+            });
+            const {queryByText} = setup();
+            const loadMore = await waitForElement(() => queryByText('Load More'));
+            fireEvent.click(loadMore);
+            const spinner = await waitForElement(() => queryByText('Loading...'));
+            expect(spinner).toBeInTheDocument();
+            expect(queryByText('Load More')).not.toBeInTheDocument();
+        });
+        it('replace spinner with Load More when after api call for loadOldMinds finishes with middle page response', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadOldMinds = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve(mockSuccessGetMindsMiddleOfMultiPage);
+                    }, 300);
+                });
+            });
+            const {queryByText} = setup();
+            const loadMore = await waitForElement(() => queryByText('Load More'));
+            fireEvent.click(loadMore);
+            await waitForElement(() => queryByText('This mind is in middle page'));
+            expect(queryByText('Loading...')).not.toBeInTheDocument();
+            expect(queryByText('Load More')).toBeInTheDocument();
+        });
+        it('replace spinner with Load More when after api call for loadOldMinds finishes error', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadOldMinds = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        reject({response: {data: {}}});
+                    }, 300);
+                });
+            });
+            const {queryByText} = setup();
+            const loadMore = await waitForElement(() => queryByText('Load More'));
+            fireEvent.click(loadMore);
+            await waitForElement(() => queryByText('Loading...'));
+            await waitForDomChange();
+            expect(queryByText('Loading...')).not.toBeInTheDocument();
+            expect(queryByText('Load More')).toBeInTheDocument();
+        });
+        //load new minds
+        it('does not allow loadNewMinds when there is an active api call about it', async () => {
+            useFakeIntervals();
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMinds = jest.fn().mockResolvedValue(mockSuccessGetNewMindsList);
+            const {queryByText} = setup({user: 'user1'});
+
+            await waitForDomChange();
+            runTimer();
+            const newMindsCount = await waitForElement(() => queryByText('There is 1 new mind'));
+            fireEvent.click(newMindsCount);
+            fireEvent.click(newMindsCount);
+            expect(apiCalls.loadNewMinds).toHaveBeenCalledTimes(1);
+            useRealIntervals();
+        });
+        it('replace There is 1 mind with spinner when there is an active api call about it', async () => {
+            useFakeIntervals();
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMinds = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve(mockSuccessGetNewMindsList);
+                    }, 300);
+                });
+            });
+            const {queryByText} = setup();
+            await waitForDomChange();
+            runTimer();
+            const newMindsCount = await waitForElement(() => queryByText('There is 1 new mind'));
+            fireEvent.click(newMindsCount);
+            const spinner = await waitForElement(() => queryByText('Loading...'));
+            expect(spinner).toBeInTheDocument();
+            expect(queryByText('There is 1 new mind')).not.toBeInTheDocument();
+            useRealIntervals();
+        });
+        it('replace spinner and There is 1 mind when after api call for loadNewMinds finishes with success', async () => {
+            useFakeIntervals();
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMinds = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve(mockSuccessGetNewMindsList);
+                    }, 300);
+                });
+            });
+            const {queryByText} = setup();
+            await waitForDomChange();
+            runTimer();
+            const newMindsCount = await waitForElement(() => queryByText('There is 1 new mind'));
+            fireEvent.click(newMindsCount);
+            await waitForElement(() => queryByText('This is the newest mind'));
+            expect(queryByText('Loading...')).not.toBeInTheDocument();
+            expect(queryByText('There is 1 new mind')).not.toBeInTheDocument();
+            useRealIntervals();
+        });
+        it('replace spinner with There is 1 mind when after api call for loadNewMinds finishes error', async () => {
+            useFakeIntervals();
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMinds = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        reject({response: {data: {}}});
+                    }, 300);
+                });
+            });
+
+            const {queryByText} = setup();
+            await waitForDomChange();
+            runTimer();
+            const newMindsCount = await waitForElement(() => queryByText('There is 1 new mind'));
+            fireEvent.click(newMindsCount);
+            await waitForElement(() => queryByText('Loading...'));
+            await waitForDomChange();
+            expect(queryByText('Loading...')).not.toBeInTheDocument();
+            expect(queryByText('There is 1 new mind')).toBeInTheDocument();
             useRealIntervals();
         });
     });
