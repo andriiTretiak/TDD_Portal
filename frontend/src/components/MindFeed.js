@@ -23,6 +23,21 @@ class MindFeed extends Component {
             });
     }
 
+    onClickLoadMore = () => {
+        const minds = this.state.page.content;
+        if(minds.length === 0){
+            return;
+        }
+        const mindAtBottom = minds[minds.length -1];
+        apiCalls.loadOldMinds(mindAtBottom.id, this.props.user)
+            .then((value) => {
+                const  page = {...this.state.page};
+                page.content = [...page.content, ...value.data.content];
+                page.last = value.data.last;
+                this.setState({page});
+            });
+    };
+
     render() {
         if(this.state.isLoadingMinds){
             return <Spinner/>;
@@ -39,7 +54,11 @@ class MindFeed extends Component {
                 return <MindView key={mind.id} mind={mind}/>
             })}
             {this.state.page.last === false && (
-                <div className="card card-header text-center">
+                <div
+                    className="card card-header text-center"
+                    onClick={this.onClickLoadMore}
+                    style={{cursor: 'pointer'}}
+                >
                     Load More
                 </div>
             )}

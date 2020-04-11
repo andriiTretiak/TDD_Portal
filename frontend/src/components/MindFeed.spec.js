@@ -1,5 +1,5 @@
 import React from "react";
-import {render, waitForDomChange, waitForElement} from "@testing-library/react";
+import {fireEvent, render, waitForDomChange, waitForElement} from "@testing-library/react";
 import MindFeed from './MindFeed';
 import * as apiCalls from '../api/apiCalls';
 import {MemoryRouter} from "react-router-dom";
@@ -53,11 +53,44 @@ const mockSuccessGetMindsFirstOfMultiPage = {
                     displayName: 'display1',
                     image: 'profile1.png'
                 }
+            },
+            {
+                id: 9,
+                content: 'This is mind 9',
+                date: 1561294668539,
+                user: {
+                    id: 1,
+                    username: 'user1',
+                    displayName: 'display1',
+                    image: 'profile1.png'
+                }
             }
         ],
         number: 0,
         first: true,
         last: false,
+        size: 5,
+        totalPages: 2
+    }
+};
+const mockSuccessGetMindsLastOfMultiPage = {
+    data: {
+        content: [
+            {
+                id: 1,
+                content: 'This is the oldest mind',
+                date: 1561294668539,
+                user: {
+                    id: 1,
+                    username: 'user1',
+                    displayName: 'display1',
+                    image: 'profile1.png'
+                }
+            }
+        ],
+        number: 0,
+        first: true,
+        last: true,
         size: 5,
         totalPages: 2
     }
@@ -121,4 +154,43 @@ describe('MindFeed', () => {
             expect(loadMore).toBeInTheDocument();
         });
     });
+    describe('Interactions', () => {
+        it('calls loadOldMinds with id when clicking load more', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadOldMinds =jest.fn().mockResolvedValue(mockSuccessGetMindsLastOfMultiPage);
+            const { queryByText } = setup();
+            const loadMore = await waitForElement(() => queryByText('Load More'));
+            fireEvent.click(loadMore);
+            const firstParam = apiCalls.loadOldMinds.mock.calls[0][0];
+            expect(firstParam).toBe(9);
+        });
+        it('calls loadOldMinds with mind id and username when clicking load more when rendered with user property', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadOldMinds =jest.fn().mockResolvedValue(mockSuccessGetMindsLastOfMultiPage);
+            const { queryByText } = setup({user: 'user1'});
+            const loadMore = await waitForElement(() => queryByText('Load More'));
+            fireEvent.click(loadMore);
+            expect(apiCalls.loadOldMinds).toHaveBeenCalledWith(9, 'user1');
+        });
+        it('displays loaded old minds when loadOldMinds api call success', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadOldMinds =jest.fn().mockResolvedValue(mockSuccessGetMindsLastOfMultiPage);
+            const { queryByText } = setup();
+            const loadMore = await waitForElement(() => queryByText('Load More'));
+            fireEvent.click(loadMore);
+            const oldMind = await waitForElement(() => queryByText('This is the oldest mind'));
+            expect(oldMind).toBeInTheDocument();
+        });
+        it('hides Load More when loadOldMinds api call returns last page', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadOldMinds =jest.fn().mockResolvedValue(mockSuccessGetMindsLastOfMultiPage);
+            const { queryByText } = setup();
+            const loadMore = await waitForElement(() => queryByText('Load More'));
+            fireEvent.click(loadMore);
+            await waitForElement(() => queryByText('This is the oldest mind'));
+            expect(queryByText('Load More')).not.toBeInTheDocument();
+        });
+    });
 });
+
+console.error = () => {};
