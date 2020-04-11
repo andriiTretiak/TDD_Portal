@@ -2,10 +2,20 @@ package com.tretiak.portal.file;
 
 import lombok.Data;
 
+import javax.persistence.*;
 import java.util.Date;
 
 @Data
+@Entity
 public class FileAttachment {
-    private String name;
+    @Id
+    @GeneratedValue
+    private long id;
+
+    @Temporal(TemporalType.TIMESTAMP)
     private Date date;
+
+    private String name;
+
+    private String fileType;
 }

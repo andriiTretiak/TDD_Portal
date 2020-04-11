@@ -43,9 +43,13 @@ public class FileUploadControllerTest {
     @Autowired
     private AppConfiguration appConfiguration;
 
+    @Autowired
+    private FileAttachmentRepository fileAttachmentRepository;
+
     @Before
     public void init() throws IOException {
         userRepository.deleteAll();
+        fileAttachmentRepository.deleteAll();
         testRestTemplate.getRestTemplate().getInterceptors().clear();
         FileUtils.cleanDirectory(new File(appConfiguration.getFullAttachmentsPath()));
     }
@@ -79,6 +83,33 @@ public class FileUploadControllerTest {
         ResponseEntity<FileAttachment> response = uploadFile(getRequestEntity(), FileAttachment.class);
         assertThat(response.getBody().getName()).isNotNull();
         assertThat(response.getBody().getName()).isNotEqualTo("profile.png");
+    }
+
+    @Test
+    public void uploadFile_withImageFromAuthorizedUser_imageSavedToFolder(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        ResponseEntity<FileAttachment> response = uploadFile(getRequestEntity(), FileAttachment.class);
+        String imagePath = appConfiguration.getFullAttachmentsPath() + "/" + response.getBody().getName();
+        File storedFile = new File(imagePath);
+        assertThat(storedFile.exists()).isTrue();
+    }
+
+    @Test
+    public void uploadFile_withImageFromAuthorizedUser_fileAttachmentSavedToDatabase(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        uploadFile(getRequestEntity(), FileAttachment.class);
+        assertThat(fileAttachmentRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    public void uploadFile_withImageFromAuthorizedUser_fileAttachmentStoredWithFileType(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        uploadFile(getRequestEntity(), FileAttachment.class);
+        FileAttachment storedFile = fileAttachmentRepository.findAll().get(0);
+        assertThat(storedFile.getFileType()).isEqualTo("image/png");
     }
 
     private <T>ResponseEntity<T> uploadFile(HttpEntity<?> requestEntity, Class<T> responseType){
