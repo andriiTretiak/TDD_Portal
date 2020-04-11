@@ -58,6 +58,23 @@ class MindFeed extends Component {
             });
     };
 
+    onClickLoadNew = () => {
+        const minds = this.state.page.content;
+        let topMindId = 0;
+        if (minds.length > 0) {
+            topMindId = minds[0].id;
+        }
+        apiCalls.loadNewMinds(topMindId, this.props.user)
+            .then(value => {
+                const page = {...this.state.page};
+                page.content = [...value.data, ...page.content];
+                this.setState({
+                    page,
+                    newMindsCount: 0
+                });
+            });
+    };
+
     render() {
         if (this.state.isLoadingMinds) {
             return <Spinner/>;
@@ -73,6 +90,8 @@ class MindFeed extends Component {
             {this.state.newMindsCount > 0 && (
                 <div
                     className="card card-header text-center"
+                    onClick={this.onClickLoadNew}
+                    style={{cursor: 'pointer'}}
                 >
                     {this.state.newMindsCount === 1 ? 'There is 1 new mind'
                         : `There are ${this.state.newMindsCount} new minds`}
