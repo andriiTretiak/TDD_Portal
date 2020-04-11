@@ -4,6 +4,29 @@ import MindFeed from './MindFeed';
 import * as apiCalls from '../api/apiCalls';
 import {MemoryRouter} from "react-router-dom";
 
+const originalSetInterval = window.setInterval;
+const originalClearInterval = window.clearInterval;
+
+let timedFunction;
+
+const useFakeIntervals = () => {
+    window.setInterval = (callback, interval) => {
+        timedFunction = callback;
+    };
+    window.clearInterval = () => {
+        timedFunction = undefined
+    };
+};
+
+const useRealIntervals = () => {
+    window.setInterval = originalSetInterval;
+    window.clearInterval = originalClearInterval;
+};
+
+const runTimer = () => {
+    timedFunction && timedFunction();
+};
+
 const setup = (props) => {
     return render(
         <MemoryRouter>
@@ -115,53 +138,75 @@ describe('MindFeed', () => {
             expect(parameter).toBeUndefined();
         });
         it('calls loadNewMindsCount with topMind id', async () => {
+            useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
             apiCalls.loadNewMindsCount =jest.fn().mockResolvedValue({data: {count: 1}});
             const { queryByText } = setup();
+            await waitForDomChange();
+            runTimer();
             await waitForElement(() => queryByText('There is 1 new mind'));
             const firstParam = apiCalls.loadNewMindsCount.mock.calls[0][0];
             expect(firstParam).toBe(10);
+            useRealIntervals();
         });
         it('calls loadNewMindsCount with topMind id and username when rendered with user property', async () => {
+            useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
             apiCalls.loadNewMindsCount =jest.fn().mockResolvedValue({data: {count: 1}});
             const { queryByText } = setup({user: 'user1'});
+            await waitForDomChange();
+            runTimer();
             await waitForElement(() => queryByText('There is 1 new mind'));
             expect(apiCalls.loadNewMindsCount).toHaveBeenCalledWith(10, 'user1');
+            useRealIntervals();
         });
         it('displays new minds count as 1 after loadNewMindsCount success', async () => {
+            useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
             apiCalls.loadNewMindsCount =jest.fn().mockResolvedValue({data: {count: 1}});
             const { queryByText } = setup({user: 'user1'});
+            await waitForDomChange();
+            runTimer();
             const newMindsCount = await waitForElement(() => queryByText('There is 1 new mind'));
             expect(newMindsCount).toBeInTheDocument();
+            useRealIntervals();
         });
         it('displays new minds count constantly', async () => {
+            useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
             apiCalls.loadNewMindsCount =jest.fn().mockResolvedValue({data: {count: 1}});
             const { queryByText } = setup({user: 'user1'});
+            await waitForDomChange();
+            runTimer();
             await waitForElement(() => queryByText('There is 1 new mind'));
             apiCalls.loadNewMindsCount =jest.fn().mockResolvedValue({data: {count: 2}});
+            runTimer();
             const newMindsCount = await waitForElement(() => queryByText('There are 2 new minds'));
             expect(newMindsCount).toBeInTheDocument();
-        }, 7000);
-        it('does not call loadNewMindsCount after component is unmounted', async (done) => {
+            useRealIntervals();
+        });
+        it('does not call loadNewMindsCount after component is unmounted', async () => {
+            useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
             apiCalls.loadNewMindsCount =jest.fn().mockResolvedValue({data: {count: 1}});
             const { queryByText, unmount } = setup({user: 'user1'});
+            await waitForDomChange();
+            runTimer();
             await waitForElement(() => queryByText('There is 1 new mind'));
             unmount();
-            setTimeout(() => {
-                expect(apiCalls.loadNewMindsCount).toHaveBeenCalledTimes(1);
-                done();
-            }, 3500);
-        }, 7000);
+            expect(apiCalls.loadNewMindsCount).toHaveBeenCalledTimes(1);
+            useRealIntervals();
+        });
         it('displays new minds count as 1 after loadNewMindsCount success when user does not have minds initially', async () => {
+            useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockEmptyResponse);
             apiCalls.loadNewMindsCount =jest.fn().mockResolvedValue({data: {count: 1}});
             const { queryByText } = setup({user: 'user1'});
+            await waitForDomChange();
+            runTimer();
             const newMindsCount = await waitForElement(() => queryByText('There is 1 new mind'));
             expect(newMindsCount).toBeInTheDocument();
+            useRealIntervals();
         });
     });
     describe('Layout', () => {
