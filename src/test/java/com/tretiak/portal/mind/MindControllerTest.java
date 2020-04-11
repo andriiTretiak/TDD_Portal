@@ -6,7 +6,7 @@ import com.tretiak.portal.mind.vm.MindVM;
 import com.tretiak.portal.user.User;
 import com.tretiak.portal.user.UserRepository;
 import com.tretiak.portal.user.UserService;
-import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,7 @@ public class MindControllerTest {
     @Autowired
     private MindService mindService;
 
-    @Before
+    @After
     public void cleanup(){
         testRestTemplate.getRestTemplate().getInterceptors().clear();
         mindRepository.deleteAll();
