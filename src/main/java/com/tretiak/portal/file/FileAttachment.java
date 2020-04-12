@@ -1,5 +1,6 @@
 package com.tretiak.portal.file;
 
+import com.tretiak.portal.mind.Mind;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -18,4 +19,7 @@ public class FileAttachment {
     private String name;
 
     private String fileType;
+
+    @OneToOne
+    private Mind mind;
 }

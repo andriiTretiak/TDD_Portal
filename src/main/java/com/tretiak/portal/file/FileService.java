@@ -51,7 +51,7 @@ public class FileService {
         }
     }
 
-    FileAttachment saveAttachment(MultipartFile file) {
+    public FileAttachment saveAttachment(MultipartFile file) {
         FileAttachment fileAttachment = new FileAttachment();
         fileAttachment.setDate(new Date());
         fileAttachment.setName(getRandomName());

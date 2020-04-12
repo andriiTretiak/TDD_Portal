@@ -1,11 +1,16 @@
 package com.tretiak.portal.mind;
 
 import com.tretiak.portal.TestPage;
+import com.tretiak.portal.configuration.AppConfiguration;
 import com.tretiak.portal.error.ApiError;
+import com.tretiak.portal.file.FileAttachment;
+import com.tretiak.portal.file.FileAttachmentRepository;
+import com.tretiak.portal.file.FileService;
 import com.tretiak.portal.mind.vm.MindVM;
 import com.tretiak.portal.user.User;
 import com.tretiak.portal.user.UserRepository;
 import com.tretiak.portal.user.UserService;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,16 +18,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -56,11 +66,22 @@ public class MindControllerTest {
     @Autowired
     private MindService mindService;
 
+    @Autowired
+    private FileAttachmentRepository fileAttachmentRepository;
+
+    @Autowired
+    private FileService fileService;
+
+    @Autowired
+    private AppConfiguration appConfiguration;
+
     @After
-    public void cleanup(){
-        testRestTemplate.getRestTemplate().getInterceptors().clear();
+    public void cleanup() throws IOException {
+        fileAttachmentRepository.deleteAll();
         mindRepository.deleteAll();
         userRepository.deleteAll();
+        testRestTemplate.getRestTemplate().getInterceptors().clear();
+        FileUtils.cleanDirectory(new File(appConfiguration.getFullAttachmentsPath()));
     }
 
     @Test
@@ -472,6 +493,60 @@ public class MindControllerTest {
         ResponseEntity<Map<String, Long>> response = getNewMindsCountOfUser(fourth.getId(), user.getUsername(),
                 new ParameterizedTypeReference<Map<String, Long>>() {});
         assertThat(response.getBody().get("count")).isEqualTo(1);
+    }
+
+    @Test
+    public void postMind_whenMindHasFileAttachmentAndUserIsAuthorized_fileAttachmentMindRelationIsUpdatedInDatabase() throws IOException {
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+
+        MultipartFile file = createFile();
+
+        FileAttachment savedFile = fileService.saveAttachment(file);
+
+        Mind mind = createValidMind();
+        mind.setAttachment(savedFile);
+        ResponseEntity<MindVM> response = postMind(mind, MindVM.class);
+        FileAttachment inDb = fileAttachmentRepository.findAll().get(0);
+        assertThat(inDb.getMind().getId()).isEqualTo(response.getBody().getId());
+    }
+
+    @Test
+    public void postMind_whenMindHasFileAttachmentAndUserIsAuthorized_mindFileAttachmentRelationIsUpdatedInDatabase() throws IOException {
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+
+        MultipartFile file = createFile();
+
+        FileAttachment savedFile = fileService.saveAttachment(file);
+
+        Mind mind = createValidMind();
+        mind.setAttachment(savedFile);
+        ResponseEntity<MindVM> response = postMind(mind, MindVM.class);
+        Mind inDb = mindRepository.findById(response.getBody().getId()).get();
+        assertThat(inDb.getAttachment().getId()).isEqualTo(savedFile.getId());
+    }
+
+    @Test
+    public void postMind_whenMindHasFileAttachmentAndUserIsAuthorized_receiveMindVMWithAttachment() throws IOException {
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+
+        MultipartFile file = createFile();
+
+        FileAttachment savedFile = fileService.saveAttachment(file);
+
+        Mind mind = createValidMind();
+        mind.setAttachment(savedFile);
+        ResponseEntity<MindVM> response = postMind(mind, MindVM.class);
+        assertThat(response.getBody().getAttachment().getName()).isEqualTo(savedFile.getName());
+    }
+
+    private MultipartFile createFile() throws IOException {
+        ClassPathResource imageResource = new ClassPathResource("profile.png");
+        byte[] fileAsByte = FileUtils.readFileToByteArray(imageResource.getFile());
+
+        return new MockMultipartFile("profile.png", fileAsByte);
     }
 
     private <T>ResponseEntity<T> getNewMindsCount(long mindId, ParameterizedTypeReference<T> responseType) {

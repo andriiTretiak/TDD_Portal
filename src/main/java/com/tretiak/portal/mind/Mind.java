@@ -1,5 +1,6 @@
 package com.tretiak.portal.mind;
 
+import com.tretiak.portal.file.FileAttachment;
 import com.tretiak.portal.user.User;
 import lombok.Data;
 
@@ -26,4 +27,7 @@ public class Mind {
 
     @ManyToOne
     private User user;
+
+    @OneToOne(mappedBy = "mind")
+    private FileAttachment attachment;
 }

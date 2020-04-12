@@ -4,7 +4,7 @@ import com.tretiak.portal.configuration.AppConfiguration;
 import com.tretiak.portal.user.UserRepository;
 import com.tretiak.portal.user.UserService;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ public class FileUploadControllerTest {
     @Autowired
     private FileAttachmentRepository fileAttachmentRepository;
 
-    @Before
+    @After
     public void init() throws IOException {
         userRepository.deleteAll();
         fileAttachmentRepository.deleteAll();

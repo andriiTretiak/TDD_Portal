@@ -1,5 +1,7 @@
 package com.tretiak.portal.mind;
 
+import com.tretiak.portal.file.FileAttachment;
+import com.tretiak.portal.file.FileAttachmentRepository;
 import com.tretiak.portal.user.User;
 import com.tretiak.portal.user.UserService;
 import org.springframework.data.domain.Page;
@@ -15,15 +17,23 @@ public class MindService {
 
     private final MindRepository mindRepository;
     private final UserService userService;
+    private final FileAttachmentRepository fileAttachmentRepository;
 
-    public MindService(MindRepository mindRepository, UserService userService) {
+    public MindService(MindRepository mindRepository, UserService userService,
+                       FileAttachmentRepository fileAttachmentRepository) {
         this.mindRepository = mindRepository;
         this.userService = userService;
+        this.fileAttachmentRepository = fileAttachmentRepository;
     }
 
     Mind save(User user, Mind mind) {
         mind.setTimestamp(new Date());
         mind.setUser(user);
+        if(mind.getAttachment()!=null){
+            FileAttachment inDb = fileAttachmentRepository.findById(mind.getAttachment().getId()).get();
+            inDb.setMind(mind);
+            mind.setAttachment(inDb);
+        }
         return mindRepository.save(mind);
     }
 
