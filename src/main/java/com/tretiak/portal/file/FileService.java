@@ -3,6 +3,8 @@ package com.tretiak.portal.file;
 import com.tretiak.portal.configuration.AppConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.Tika;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,9 +14,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
+@EnableScheduling
 public class FileService {
 
     private final AppConfiguration appConfiguration;
@@ -65,5 +69,23 @@ public class FileService {
             e.printStackTrace();
         }
         return fileAttachmentRepository.save(fileAttachment);
+    }
+
+    @Scheduled(fixedRate = 60 * 60 * 1000)
+    void cleanupStorage() {
+        Date oneHourAgo = new Date(System.currentTimeMillis() - (60*60*1000));
+        List<FileAttachment> oldFiles = fileAttachmentRepository.findByDateBeforeAndMindIsNull(oneHourAgo);
+        oldFiles.forEach(attachment -> {
+            deleteAttachmentFile(attachment.getName());
+            fileAttachmentRepository.deleteById(attachment.getId());
+        });
+    }
+
+    private void deleteAttachmentFile(String name) {
+        try {
+            Files.deleteIfExists(Paths.get(appConfiguration.getFullAttachmentsPath() + "/" + name));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
