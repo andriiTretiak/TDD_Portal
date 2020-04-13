@@ -50,23 +50,26 @@ describe('MindSubmit', () => {
         });
     });
     describe('Interactions', () => {
-        it('displays 3 rows when focused to textarea', () => {
-            const {container} = setup();
-            const textArea = container.querySelector('textarea');
+
+        let textArea;
+        const setupFocused =() => {
+            const rendered = setup();
+            textArea = rendered.container.querySelector('textarea');
             fireEvent.focus(textArea);
+            return rendered;
+        };
+
+        it('displays 3 rows when focused to textarea', () => {
+            setupFocused();
             expect(textArea.rows).toBe(3);
         });
         it('displays Send button when focused to textarea', () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             const sendButton = queryByText('Send');
             expect(sendButton).toBeInTheDocument();
         });
         it('displays Cancel button when focused to textarea', () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             const cancelButton = queryByText('Cancel');
             expect(cancelButton).toBeInTheDocument();
         });
@@ -81,17 +84,13 @@ describe('MindSubmit', () => {
             expect(cancelButton).not.toBeInTheDocument();
         });
         it('returns back to unfocused state after clicking the cancel', () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             const cancelButton = queryByText('Cancel');
             fireEvent.click(cancelButton);
             expect(queryByText('Cancel')).not.toBeInTheDocument();
         });
         it('calls postMind with mind request object when clicking Send', () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -103,9 +102,7 @@ describe('MindSubmit', () => {
             });
         });
         it('returns to unfocused state after successful postMind action', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -116,9 +113,7 @@ describe('MindSubmit', () => {
             expect(queryByText('Send')).not.toBeInTheDocument();
         });
         it('clears content after successful postMind action', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -129,17 +124,13 @@ describe('MindSubmit', () => {
             expect(queryByText('Test mind content')).not.toBeInTheDocument();
         });
         it('clears content after clicking cancel', () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
             fireEvent.click(queryByText('Cancel'));
             expect(queryByText('Test mind content')).not.toBeInTheDocument();
         });
         it('disables Send button when there is postMind api call', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -159,9 +150,7 @@ describe('MindSubmit', () => {
             expect(mockFunction).toHaveBeenCalledTimes(1);
         });
         it('disables Cancel button when there is postMind api call', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -183,9 +172,7 @@ describe('MindSubmit', () => {
             expect(cancelButton).toBeDisabled();
         });
         it('disables spinner when there is postMind api call', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -204,9 +191,7 @@ describe('MindSubmit', () => {
             expect(queryByText('Loading...')).toBeInTheDocument();
         });
         it('enables Send button when there is postMind api call fails', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -229,9 +214,7 @@ describe('MindSubmit', () => {
             expect(queryByText('Send')).not.toBeDisabled();
         });
         it('enables Cancel button when there is postMind api call fails', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -254,9 +237,7 @@ describe('MindSubmit', () => {
             expect(queryByText('Cancel')).not.toBeDisabled();
         });
         it('enables Send button state after successful postMind action', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -269,9 +250,7 @@ describe('MindSubmit', () => {
             expect(queryByText('Send')).not.toBeDisabled();
         });
         it('displays validation error for content', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -294,9 +273,7 @@ describe('MindSubmit', () => {
             expect(queryByText('It must have minimum 10 and maximum 5000 characters')).toBeInTheDocument();
         });
         it('clears validation error after clicking cancel', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -321,9 +298,7 @@ describe('MindSubmit', () => {
             expect(queryByText('It must have minimum 10 and maximum 5000 characters')).not.toBeInTheDocument();
         });
         it('clears validation error after content is changed', async () => {
-            const {container, queryByText} = setup();
-            const textArea = container.querySelector('textarea');
-            fireEvent.focus(textArea);
+            const {queryByText} = setupFocused();
             fireEvent.change(textArea, {target: {value: 'Test mind content'}});
 
             const sendButton = queryByText('Send');
@@ -346,6 +321,39 @@ describe('MindSubmit', () => {
             fireEvent.change(textArea, {target: {value: 'Test mind content is changed'}});
 
             expect(queryByText('It must have minimum 10 and maximum 5000 characters')).not.toBeInTheDocument();
+        });
+        it('displays file attachment input when text area focused', () => {
+            const {container} = setupFocused();
+
+            const uploadInput = container.querySelector('input');
+            expect(uploadInput.type).toBe('file');
+        });
+        it('displays image component when file selected', async () => {
+            const {container} = setupFocused();
+
+            const uploadInput = container.querySelector('input');
+            expect(uploadInput.type).toBe('file');
+
+            const file = new File(['dummy content'], 'example.png', {type: 'image/png'});
+            fireEvent.change(uploadInput, {target:{files:[file]}});
+            await waitForDomChange();
+            const images = container.querySelectorAll('img');
+            const attachmentImage = images[1];
+            expect(attachmentImage.src).toContain('data:image/png;base64');
+        });
+        it('removes image after clicking cancel', async () => {
+            const {container, queryByText } = setupFocused();
+
+            const uploadInput = container.querySelector('input');
+            expect(uploadInput.type).toBe('file');
+
+            const file = new File(['dummy content'], 'example.png', {type: 'image/png'});
+            fireEvent.change(uploadInput, {target:{files:[file]}});
+            await waitForDomChange();
+            fireEvent.click(queryByText('Cancel'));
+            fireEvent.focus(textArea);
+            const images = container.querySelectorAll('img');
+            expect(images.length).toBe(1);
         });
     });
 });

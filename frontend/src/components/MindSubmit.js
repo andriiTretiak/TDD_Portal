@@ -3,13 +3,16 @@ import ProfileImageWithDefault from "./ProfileImageWithDefault";
 import {connect} from 'react-redux';
 import * as apiCalls from '../api/apiCalls';
 import ButtonWithProgress from "./ButtonWithProgress";
+import Input from "./Input";
 
 class MindSubmit extends Component {
     state = {
         focused: false,
         content: undefined,
         pendingApiCall: false,
-        errors: {}
+        errors: {},
+        file: undefined,
+        image: undefined
     };
 
     onChangeContent = (event) => {
@@ -20,6 +23,21 @@ class MindSubmit extends Component {
         });
     };
 
+    onFileSelect = (event) => {
+        if (event.target.files.length === 0) {
+            return;
+        }
+        const file = event.target.files[0];
+        let reader = new FileReader();
+        reader.onloadend = () => {
+            this.setState({
+                image: reader.result,
+                file
+            })
+        };
+        reader.readAsDataURL(file);
+    };
+
     onFocus = () => {
         this.setState({focused: true});
     };
@@ -28,12 +46,14 @@ class MindSubmit extends Component {
         this.setState({
             focused: false,
             content: '',
-            errors: {}
+            errors: {},
+            file: undefined,
+            image: undefined
         });
     };
 
     onClickSend = () => {
-        const body ={
+        const body = {
             content: this.state.content
         };
         this.setState({pendingApiCall: true});
@@ -45,20 +65,20 @@ class MindSubmit extends Component {
                     pendingApiCall: false
                 })
             }).catch(reason => {
-                let errors = {};
-                if(reason.response.data && reason.response.data.validationErrors){
-                    errors = reason.response.data.validationErrors;
-                }
-                this.setState({
-                    pendingApiCall: false,
-                    errors
-                });
+            let errors = {};
+            if (reason.response.data && reason.response.data.validationErrors) {
+                errors = reason.response.data.validationErrors;
+            }
+            this.setState({
+                pendingApiCall: false,
+                errors
+            });
         });
     };
 
     render() {
         let textAreaClassName = 'form-control w-100';
-        if(this.state.errors.content){
+        if (this.state.errors.content) {
             textAreaClassName += ' is-invalid';
         }
         return (
@@ -81,23 +101,41 @@ class MindSubmit extends Component {
                         <span className="invalid-feedback">{this.state.errors.content}</span>
                     )}
                     {this.state.focused && (
-                        <div className="text-right mt-1">
-                            <ButtonWithProgress
-                                className="btn btn-success"
-                                onClick={this.onClickSend}
-                                disabled={this.state.pendingApiCall}
-                                pendingApiCall={this.state.pendingApiCall}
-                                text="Send"
-                            />
-                            <button
-                                className="btn btn-light ml-1"
-                                onClick={this.onClickCancel}
-                                disabled={this.state.pendingApiCall}
-                            >
-                                <i className="fas fa-times"/>
-                                Cancel
-                            </button>
-                        </div>)}
+                        <div>
+                            <div className="pt-1">
+                                <Input
+                                    type="file"
+                                    onChange={this.onFileSelect}
+                                />
+                                {this.state.image && (
+                                    <img
+                                        className="mt-1 img-thumbnail"
+                                        src={this.state.image}
+                                        alt="upload"
+                                        width="128"
+                                        height="64"
+                                    />
+                                )}
+                            </div>
+                            <div className="text-right mt-1">
+                                <ButtonWithProgress
+                                    className="btn btn-success"
+                                    onClick={this.onClickSend}
+                                    disabled={this.state.pendingApiCall}
+                                    pendingApiCall={this.state.pendingApiCall}
+                                    text="Send"
+                                />
+                                <button
+                                    className="btn btn-light ml-1"
+                                    onClick={this.onClickCancel}
+                                    disabled={this.state.pendingApiCall}
+                                >
+                                    <i className="fas fa-times"/>
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         );
