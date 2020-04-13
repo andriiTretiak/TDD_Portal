@@ -329,6 +329,12 @@ describe('MindSubmit', () => {
             expect(uploadInput.type).toBe('file');
         });
         it('displays image component when file selected', async () => {
+            apiCalls.postMindFile = jest.fn().mockResolvedValue({
+                data: {
+                    id:1 ,
+                    name: 'random-name.png'
+                }
+            });
             const {container} = setupFocused();
 
             const uploadInput = container.querySelector('input');
@@ -342,6 +348,12 @@ describe('MindSubmit', () => {
             expect(attachmentImage.src).toContain('data:image/png;base64');
         });
         it('removes image after clicking cancel', async () => {
+            apiCalls.postMindFile = jest.fn().mockResolvedValue({
+                data: {
+                    id:1 ,
+                    name: 'random-name.png'
+                }
+            });
             const {container, queryByText } = setupFocused();
 
             const uploadInput = container.querySelector('input');
@@ -354,6 +366,136 @@ describe('MindSubmit', () => {
             fireEvent.focus(textArea);
             const images = container.querySelectorAll('img');
             expect(images.length).toBe(1);
+        });
+        it('calls postMindFile when file selected', async () => {
+            apiCalls.postMindFile = jest.fn().mockResolvedValue({
+               data: {
+                   id:1 ,
+                   name: 'random-name.png'
+               }
+            });
+            const {container } = setupFocused();
+
+            const uploadInput = container.querySelector('input');
+            expect(uploadInput.type).toBe('file');
+
+            const file = new File(['dummy content'], 'example.png', {type: 'image/png'});
+            fireEvent.change(uploadInput, {target:{files:[file]}});
+            await waitForDomChange();
+            expect(apiCalls.postMindFile).toHaveBeenCalledTimes(1);
+        });
+        it('calls postMindFile with selected file', async (done) => {
+            apiCalls.postMindFile = jest.fn().mockResolvedValue({
+                data: {
+                    id:1 ,
+                    name: 'random-name.png'
+                }
+            });
+            const {container } = setupFocused();
+
+            const uploadInput = container.querySelector('input');
+            expect(uploadInput.type).toBe('file');
+
+            const file = new File(['dummy content'], 'example.png', {type: 'image/png'});
+            fireEvent.change(uploadInput, {target:{files:[file]}});
+            await waitForDomChange();
+            const body = apiCalls.postMindFile.mock.calls[0][0];
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                expect(reader.result).toBe('dummy content');
+                done();
+            };
+            reader.readAsText(body.get('file'));
+        });
+        it('calls postMind with mind file attachment object when clicking Send', async () => {
+            apiCalls.postMindFile = jest.fn().mockResolvedValue({
+                data: {
+                    id:1 ,
+                    name: 'random-name.png'
+                }
+            });
+            const {queryByText, container} = setupFocused();
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const uploadInput = container.querySelector('input');
+            expect(uploadInput.type).toBe('file');
+
+            const file = new File(['dummy content'], 'example.png', {type: 'image/png'});
+            fireEvent.change(uploadInput, {target:{files:[file]}});
+
+            await waitForDomChange();
+
+            const sendButton = queryByText('Send');
+
+            apiCalls.postMind = jest.fn().mockResolvedValue({});
+            fireEvent.click(sendButton);
+            expect(apiCalls.postMind).toHaveBeenCalledWith({
+                content: 'Test mind content',
+                attachment: {
+                    id:1 ,
+                    name: 'random-name.png'
+                }
+            });
+        });
+        it('clears image after postMind success', async () => {
+            apiCalls.postMindFile = jest.fn().mockResolvedValue({
+                data: {
+                    id:1 ,
+                    name: 'random-name.png'
+                }
+            });
+            const {queryByText, container} = setupFocused();
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const uploadInput = container.querySelector('input');
+            expect(uploadInput.type).toBe('file');
+
+            const file = new File(['dummy content'], 'example.png', {type: 'image/png'});
+            fireEvent.change(uploadInput, {target:{files:[file]}});
+
+            await waitForDomChange();
+
+            const sendButton = queryByText('Send');
+            apiCalls.postMind = jest.fn().mockResolvedValue({});
+            fireEvent.click(sendButton);
+
+            await waitForDomChange();
+
+            fireEvent.focus(textArea);
+
+            const images = container.querySelectorAll('img');
+            expect(images.length).toBe(1);
+        });
+        it('calls postMind without file attachment after cancelling previous file selection', async () => {
+            apiCalls.postMindFile = jest.fn().mockResolvedValue({
+                data: {
+                    id:1 ,
+                    name: 'random-name.png'
+                }
+            });
+            const {queryByText, container} = setupFocused();
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+
+            const uploadInput = container.querySelector('input');
+            expect(uploadInput.type).toBe('file');
+
+            const file = new File(['dummy content'], 'example.png', {type: 'image/png'});
+            fireEvent.change(uploadInput, {target:{files:[file]}});
+
+            await waitForDomChange();
+
+            fireEvent.click(queryByText('Cancel'));
+            fireEvent.focus(textArea);
+
+            const sendButton = queryByText('Send');
+            apiCalls.postMind = jest.fn().mockResolvedValue({});
+            fireEvent.change(textArea, {target: {value: 'Test mind content'}});
+            fireEvent.click(sendButton);
+
+            expect(apiCalls.postMind).toHaveBeenCalledWith({
+                content: 'Test mind content'
+            });
         });
     });
 });

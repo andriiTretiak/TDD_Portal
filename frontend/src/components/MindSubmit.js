@@ -12,7 +12,8 @@ class MindSubmit extends Component {
         pendingApiCall: false,
         errors: {},
         file: undefined,
-        image: undefined
+        image: undefined,
+        attachment: undefined
     };
 
     onChangeContent = (event) => {
@@ -33,37 +34,47 @@ class MindSubmit extends Component {
             this.setState({
                 image: reader.result,
                 file
-            })
+            }, () => {
+                this.uploadFile();
+            });
         };
         reader.readAsDataURL(file);
+    };
+
+    uploadFile = () => {
+        const body = new FormData();
+        body.append('file', this.state.file);
+        apiCalls.postMindFile(body)
+            .then(value => {
+                this.setState({attachment: value.data});
+            });
     };
 
     onFocus = () => {
         this.setState({focused: true});
     };
 
-    onClickCancel = () => {
+    resetState =()=> {
         this.setState({
+            pendingApiCall: false,
             focused: false,
             content: '',
             errors: {},
             file: undefined,
-            image: undefined
+            image: undefined,
+            attachment: undefined
         });
     };
 
     onClickSend = () => {
         const body = {
-            content: this.state.content
+            content: this.state.content,
+            attachment: this.state.attachment
         };
         this.setState({pendingApiCall: true});
         apiCalls.postMind(body)
             .then(response => {
-                this.setState({
-                    focused: false,
-                    content: '',
-                    pendingApiCall: false
-                })
+                this.resetState();
             }).catch(reason => {
             let errors = {};
             if (reason.response.data && reason.response.data.validationErrors) {
@@ -127,7 +138,7 @@ class MindSubmit extends Component {
                                 />
                                 <button
                                     className="btn btn-light ml-1"
-                                    onClick={this.onClickCancel}
+                                    onClick={this.resetState}
                                     disabled={this.state.pendingApiCall}
                                 >
                                     <i className="fas fa-times"/>
