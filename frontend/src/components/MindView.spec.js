@@ -3,20 +3,51 @@ import {render} from "@testing-library/react";
 import MindView from "./MindView";
 import {MemoryRouter} from "react-router-dom";
 
-const setup = () => {
+const mindWithoutAttachment = {
+    id: 10,
+    content: 'This is the first mind',
+    user: {
+        id: 1,
+        username: 'user1',
+        displayName: 'display1',
+        image: 'profile1.png'
+    }
+};
+
+const mindWithAttachment = {
+    id: 10,
+    content: 'This is the first mind',
+    user: {
+        id: 1,
+        username: 'user1',
+        displayName: 'display1',
+        image: 'profile1.png'
+    },
+    attachment: {
+        fileType: 'image/png',
+        name: 'attachment-image.png'
+    }
+};
+
+const mindWithPdfAttachment = {
+    id: 10,
+    content: 'This is the first mind',
+    user: {
+        id: 1,
+        username: 'user1',
+        displayName: 'display1',
+        image: 'profile1.png'
+    },
+    attachment: {
+        fileType: 'applications/pdf',
+        name: 'attachment.pdf'
+    }
+};
+
+const setup = (mind = mindWithoutAttachment) => {
     const oneMinuteAgo = 60 * 1000;
-    const date = new Date(new Date() - oneMinuteAgo);
-    const mind = {
-        id: 10,
-        content: 'This is the first mind',
-        date: date,
-        user: {
-            id: 1,
-            username: 'user1',
-            displayName: 'display1',
-            image: 'profile1.png'
-        }
-    };
+    mind.date = new Date(new Date() - oneMinuteAgo);
+
     return render(
         <MemoryRouter>
             <MindView mind={mind} />
@@ -47,6 +78,22 @@ describe('MindView', () => {
             const { container } = setup();
             const anchor = container.querySelector('a');
             expect(anchor.getAttribute('href')).toBe('/user1');
+        });
+        it('displays file attachment image', () => {
+            const { container } = setup(mindWithAttachment);
+            const images = container.querySelectorAll('img');
+            expect(images.length).toBe(2);
+        });
+        it('does not display file attachment when attachment type is not image', () => {
+            const { container } = setup(mindWithPdfAttachment);
+            const images = container.querySelectorAll('img');
+            expect(images.length).toBe(1);
+        });
+        it('sets the attachment path as source for the file attachment image', () => {
+            const { container } = setup(mindWithAttachment);
+            const images = container.querySelectorAll('img');
+            const attachmentImage = images[1];
+            expect(attachmentImage.src).toContain('/images/attachments/' + mindWithAttachment.attachment.name);
         });
     });
 });

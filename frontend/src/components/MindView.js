@@ -9,6 +9,7 @@ class MindView extends Component {
         const {user, date} = mind;
         const {username, displayName, image} = user;
         const relativeDate = format(date);
+        const attachmentImageVisible = mind.attachment && mind.attachment.fileType.startsWith("image");
         return (
             <div className="card p-1">
                 <div className="d-flex">
@@ -29,6 +30,13 @@ class MindView extends Component {
                 <div className="pl-5">
                     {mind.content}
                 </div>
+                {attachmentImageVisible && <div className="pl-5">
+                    <img
+                        alt="attachment"
+                        src={`/images/attachments/${mind.attachment.name}`}
+                        className="img-fluid"
+                    />
+                </div>}
             </div>
         );
     }
