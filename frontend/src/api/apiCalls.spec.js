@@ -130,4 +130,14 @@ describe('apiCalls', () => {
             expect(mockGetMinds).toHaveBeenCalledWith('/api/1.0/users/user1/minds/5?direction=after&count=true');
         });
     });
+    describe('postMindFile', () => {
+        it('calls /api/1.0/minds/upload', () => {
+            const mockPostMindFile = jest.fn();
+            axios.post = mockPostMindFile;
+            apiCalls.postMindFile();
+
+            const path = mockPostMindFile.mock.calls[0][0];
+            expect(path).toBe('/api/1.0/minds/upload');
+        });
+    });
 });

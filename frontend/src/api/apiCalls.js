@@ -59,3 +59,7 @@ export const loadNewMindsCount = (mindId, username) => {
         : `/api/1.0/minds/${mindId}`;
     return axios.get(basePath + '?direction=after&count=true');
 };
+
+export const postMindFile = (file) => {
+    return axios.post('/api/1.0/minds/upload', file);
+};
