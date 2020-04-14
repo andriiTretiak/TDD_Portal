@@ -13,7 +13,8 @@ class MindFeed extends Component {
         isLoadingMinds: false,
         newMindsCount: 0,
         isLoadOldMinds: false,
-        isLoadNewMinds: false
+        isLoadNewMinds: false,
+        isDeletingMind: false
     };
 
     componentDidMount() {
@@ -100,6 +101,20 @@ class MindFeed extends Component {
         this.setState({mindToBeDeleted: undefined});
     };
 
+    onClickModalOk = () => {
+        this.setState({isDeletingMind: true});
+        apiCalls.deleteMind(this.state.mindToBeDeleted.id)
+            .then(value => {
+                const page ={...this.state.page};
+                page.content = page.content.filter(mind => mind.id !== this.state.mindToBeDeleted.id);
+                this.setState({
+                    mindToBeDeleted: undefined,
+                    page,
+                    isDeletingMind: false
+                });
+            });
+    };
+
     render() {
         if (this.state.isLoadingMinds) {
             return <Spinner/>;
@@ -144,6 +159,8 @@ class MindFeed extends Component {
                 body={this.state.mindToBeDeleted && `Are you sure to delete '${this.state.mindToBeDeleted.content}'`}
                 title="Delete!"
                 okButton={"Delete Mind"}
+                onClickOk={this.onClickModalOk}
+                pendingApiCall={this.state.isDeletingMind}
             />
         </div>
     }

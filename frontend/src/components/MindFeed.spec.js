@@ -562,13 +562,120 @@ describe('MindFeed', () => {
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
             apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
 
-            const {queryByTestId, container, queryByText} = setup();
+            const { container, queryByText} = setup();
             await waitForDomChange();
             const deleteButton = container.querySelectorAll('button')[0];
             fireEvent.click(deleteButton);
 
             const message = queryByText(`Are you sure to delete 'This is the last mind'`);
             expect(message).toBeInTheDocument();
+        });
+        it('calls deleteMind api with mind id when delete button is clicked on modal', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
+            apiCalls.deleteMind = jest.fn().mockResolvedValue({});
+
+            const { container, queryByText} = setup();
+            await waitForDomChange();
+            const deleteButton = container.querySelectorAll('button')[0];
+            fireEvent.click(deleteButton);
+
+            const deleteMindButton = queryByText('Delete Mind');
+            fireEvent.click(deleteMindButton);
+            expect(apiCalls.deleteMind).toHaveBeenCalledWith(10);
+        });
+        it('hides model after successful deleteMind api call', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
+            apiCalls.deleteMind = jest.fn().mockResolvedValue({});
+
+            const { container, queryByText, queryByTestId} = setup();
+            await waitForDomChange();
+            const deleteButton = container.querySelectorAll('button')[0];
+            fireEvent.click(deleteButton);
+
+            const deleteMindButton = queryByText('Delete Mind');
+            fireEvent.click(deleteMindButton);
+            await waitForDomChange();
+            const modalRootDiv = queryByTestId('modal-root');
+            expect(modalRootDiv).not.toHaveClass('d-block show');
+        });
+        it('removes the deleted mind from document after successful deleteMind api call', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
+            apiCalls.deleteMind = jest.fn().mockResolvedValue({});
+
+            const { container, queryByText} = setup();
+            await waitForDomChange();
+            const deleteButton = container.querySelectorAll('button')[0];
+            fireEvent.click(deleteButton);
+
+            const deleteMindButton = queryByText('Delete Mind');
+            fireEvent.click(deleteMindButton);
+            await waitForDomChange();
+            expect(queryByText('This is the last mind')).not.toBeInTheDocument();
+        });
+        it('disable Modal buttons when api call in progress', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
+            apiCalls.deleteMind = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve({});
+                    }, 300);
+                });
+            });
+
+            const { container, queryByText} = setup();
+            await waitForDomChange();
+            const deleteButton = container.querySelectorAll('button')[0];
+            fireEvent.click(deleteButton);
+
+            const deleteMindButton = queryByText('Delete Mind');
+            fireEvent.click(deleteMindButton);
+            expect(deleteMindButton).toBeDisabled();
+            expect(queryByText('Cancel')).toBeDisabled();
+        });
+        it('display spinner when api call in progress', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
+            apiCalls.deleteMind = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve({});
+                    }, 300);
+                });
+            });
+
+            const { container, queryByText} = setup();
+            await waitForDomChange();
+            const deleteButton = container.querySelectorAll('button')[0];
+            fireEvent.click(deleteButton);
+
+            const deleteMindButton = queryByText('Delete Mind');
+            fireEvent.click(deleteMindButton);
+            expect(queryByText('Loading...')).toBeInTheDocument();
+        });
+        it('hides spinner when api call finishes', async () => {
+            apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
+            apiCalls.deleteMind = jest.fn().mockImplementation(() => {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve({});
+                    }, 300);
+                });
+            });
+
+            const { container, queryByText} = setup();
+            await waitForDomChange();
+            const deleteButton = container.querySelectorAll('button')[0];
+            fireEvent.click(deleteButton);
+
+            const deleteMindButton = queryByText('Delete Mind');
+            fireEvent.click(deleteMindButton);
+            await waitForDomChange();
+            expect(queryByText('Loading...')).not.toBeInTheDocument();
         });
     });
 });
