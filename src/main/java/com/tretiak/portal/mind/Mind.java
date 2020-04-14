@@ -28,6 +28,6 @@ public class Mind {
     @ManyToOne
     private User user;
 
-    @OneToOne(mappedBy = "mind")
+    @OneToOne(mappedBy = "mind", orphanRemoval = true)
     private FileAttachment attachment;
 }

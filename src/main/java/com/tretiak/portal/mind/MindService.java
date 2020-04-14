@@ -2,6 +2,7 @@ package com.tretiak.portal.mind;
 
 import com.tretiak.portal.file.FileAttachment;
 import com.tretiak.portal.file.FileAttachmentRepository;
+import com.tretiak.portal.file.FileService;
 import com.tretiak.portal.user.User;
 import com.tretiak.portal.user.UserService;
 import org.springframework.data.domain.Page;
@@ -18,12 +19,14 @@ public class MindService {
     private final MindRepository mindRepository;
     private final UserService userService;
     private final FileAttachmentRepository fileAttachmentRepository;
+    private final FileService fileService;
 
     public MindService(MindRepository mindRepository, UserService userService,
-                       FileAttachmentRepository fileAttachmentRepository) {
+                       FileAttachmentRepository fileAttachmentRepository, FileService fileService) {
         this.mindRepository = mindRepository;
         this.userService = userService;
         this.fileAttachmentRepository = fileAttachmentRepository;
+        this.fileService = fileService;
     }
 
     Mind save(User user, Mind mind) {
@@ -86,6 +89,10 @@ public class MindService {
     }
 
     void deleteMind(long id) {
+        Mind mind = mindRepository.getOne(id);
+        if(mind.getAttachment()!=null){
+            fileService.deleteAttachmentFile(mind.getAttachment().getName());
+        }
         mindRepository.deleteById(id);
     }
 }
