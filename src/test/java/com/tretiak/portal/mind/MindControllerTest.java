@@ -578,6 +578,24 @@ public class MindControllerTest {
         assertThat(inDb.isPresent()).isFalse();
     }
 
+    @Test
+    public void deleteMind_whenMindIsOwnedByAnotherUser_receiveForbidden(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        User mindOwner = userService.save(createValidUser("mind-owner"));
+        Mind mind = mindService.save(mindOwner, createValidMind());
+        ResponseEntity<Object> response = deleteMind(mind.getId(), Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    public void deleteMind_whenMindIsNotExists_receiveForbidden(){
+        userService.save(createValidUser("user1"));
+        authenticate("user1");
+        ResponseEntity<Object> response = deleteMind(555, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
     private MultipartFile createFile() throws IOException {
         ClassPathResource imageResource = new ClassPathResource("profile.png");
         byte[] fileAsByte = FileUtils.readFileToByteArray(imageResource.getFile());

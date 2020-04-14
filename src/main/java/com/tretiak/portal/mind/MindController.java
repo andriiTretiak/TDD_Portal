@@ -7,6 +7,7 @@ import com.tretiak.portal.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -58,6 +59,7 @@ public class MindController {
     }
 
     @DeleteMapping("/minds/{id:[0-9]+}")
+    @PreAuthorize("@mindSecurityService.allowToDelete(#id, principal)")
     GenericResponse deleteMind(@PathVariable long id){
         mindService.deleteMind(id);
         return new GenericResponse("Mind is removed");
