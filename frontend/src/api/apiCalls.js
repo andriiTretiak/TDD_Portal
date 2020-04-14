@@ -63,3 +63,7 @@ export const loadNewMindsCount = (mindId, username) => {
 export const postMindFile = (file) => {
     return axios.post('/api/1.0/minds/upload', file);
 };
+
+export const deleteMind = (mindId) => {
+    return axios.delete('/api/1.0/minds/' + mindId);
+};

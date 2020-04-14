@@ -140,4 +140,14 @@ describe('apiCalls', () => {
             expect(path).toBe('/api/1.0/minds/upload');
         });
     });
+    describe('deleteMind', () => {
+        it('calls /api/1.0/minds/5 when mind id param provided as 5', () => {
+            const mockDeleteMind = jest.fn();
+            axios.delete = mockDeleteMind;
+            apiCalls.deleteMind(5);
+
+            const path = mockDeleteMind.mock.calls[0][0];
+            expect(path).toBe('/api/1.0/minds/5');
+        });
+    });
 });
