@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import * as apiCalls from '../api/apiCalls';
 import Spinner from "./Spinner";
 import MindView from "./MindView";
+import Modal from "./Modal";
 
 class MindFeed extends Component {
 
@@ -91,6 +92,14 @@ class MindFeed extends Component {
         });
     };
 
+    onClickDeleteMind = (mind) => {
+        this.setState({mindToBeDeleted: mind});
+    };
+
+    onClickModalCancel = () => {
+        this.setState({mindToBeDeleted: undefined});
+    };
+
     render() {
         if (this.state.isLoadingMinds) {
             return <Spinner/>;
@@ -114,7 +123,11 @@ class MindFeed extends Component {
                 </div>
             )}
             {this.state.page.content.map((mind) => {
-                return <MindView key={mind.id} mind={mind}/>
+                return <MindView
+                    key={mind.id}
+                    mind={mind}
+                    onClickDeleteMind={() => this.onClickDeleteMind(mind)}
+                />
             })}
             {this.state.page.last === false && (
                 <div
@@ -125,6 +138,13 @@ class MindFeed extends Component {
                     {this.state.isLoadOldMinds ? <Spinner/> : 'Load More'}
                 </div>
             )}
+            <Modal
+                visible={this.state.mindToBeDeleted && true}
+                onClickCancel={this.onClickModalCancel}
+                body={this.state.mindToBeDeleted && `Are you sure to delete '${this.state.mindToBeDeleted.content}'`}
+                title="Delete!"
+                okButton={"Delete Mind"}
+            />
         </div>
     }
 }

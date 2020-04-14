@@ -6,7 +6,7 @@ import {connect} from "react-redux";
 
 class MindView extends Component {
     render() {
-        const {mind} = this.props;
+        const {mind, onClickDeleteMind} = this.props;
         const {user, date} = mind;
         const {username, displayName, image} = user;
         const relativeDate = format(date);
@@ -28,7 +28,7 @@ class MindView extends Component {
                         <span className="text-black-50"> - </span>
                         <span className="text-black-50">{relativeDate}</span>
                     </div>
-                    {ownedByLoggedInUser && <button className="btn btn-outline-danger btn-sm">
+                    {ownedByLoggedInUser && <button className="btn btn-outline-danger btn-sm" onClick={onClickDeleteMind}>
                         <i className="far fa-trash-alt" />
                     </button>}
                 </div>
