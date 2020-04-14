@@ -7,6 +7,7 @@ import com.tretiak.portal.file.FileAttachment;
 import com.tretiak.portal.file.FileAttachmentRepository;
 import com.tretiak.portal.file.FileService;
 import com.tretiak.portal.mind.vm.MindVM;
+import com.tretiak.portal.shared.GenericResponse;
 import com.tretiak.portal.user.User;
 import com.tretiak.portal.user.UserRepository;
 import com.tretiak.portal.user.UserService;
@@ -35,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -542,11 +544,50 @@ public class MindControllerTest {
         assertThat(response.getBody().getAttachment().getName()).isEqualTo(savedFile.getName());
     }
 
+    @Test
+    public void deleteMind_whenUserUnauthorized_receiveUnauthorized(){
+        ResponseEntity<Object> response = deleteMind(555, Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    public void deleteMind_whenUserAuthorized_receiveOk(){
+        User user = userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = mindService.save(user, createValidMind());
+        ResponseEntity<Object> response = deleteMind(mind.getId(), Object.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void deleteMind_whenUserAuthorized_receiveGenericResponse(){
+        User user = userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = mindService.save(user, createValidMind());
+        ResponseEntity<GenericResponse> response = deleteMind(mind.getId(), GenericResponse.class);
+        assertThat(response.getBody().getMessage()).isNotNull();
+    }
+
+    @Test
+    public void deleteMind_whenUserAuthorized_mindRemovedFromDatabase(){
+        User user = userService.save(createValidUser("user1"));
+        authenticate("user1");
+        Mind mind = mindService.save(user, createValidMind());
+        deleteMind(mind.getId(), Object.class);
+        Optional<Mind> inDb = mindRepository.findById(mind.getId());
+        assertThat(inDb.isPresent()).isFalse();
+    }
+
     private MultipartFile createFile() throws IOException {
         ClassPathResource imageResource = new ClassPathResource("profile.png");
         byte[] fileAsByte = FileUtils.readFileToByteArray(imageResource.getFile());
 
         return new MockMultipartFile("profile.png", fileAsByte);
+    }
+
+    private <T>ResponseEntity<T> deleteMind(long mindId, Class<T> responseType){
+        return testRestTemplate.exchange(API_1_0_MINDS + "/" + mindId, HttpMethod.DELETE, null,
+                responseType);
     }
 
     private <T>ResponseEntity<T> getNewMindsCount(long mindId, ParameterizedTypeReference<T> responseType) {

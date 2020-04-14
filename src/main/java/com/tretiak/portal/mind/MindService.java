@@ -84,4 +84,8 @@ public class MindService {
     private Specification<Mind> idGreaterThan(long id) {
         return (Specification<Mind>) (root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.greaterThan(root.get("id"), id);
     }
+
+    void deleteMind(long id) {
+        mindRepository.deleteById(id);
+    }
 }

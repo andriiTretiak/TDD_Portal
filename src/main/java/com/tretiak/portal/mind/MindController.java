@@ -2,6 +2,7 @@ package com.tretiak.portal.mind;
 
 import com.tretiak.portal.mind.vm.MindVM;
 import com.tretiak.portal.shared.CurrentUser;
+import com.tretiak.portal.shared.GenericResponse;
 import com.tretiak.portal.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,20 +57,9 @@ public class MindController {
         return ResponseEntity.ok(newMinds);
     }
 
-//    @GetMapping("/users/{username}/minds/{id:[0-9]+}")
-//    ResponseEntity<?> getMindsRelativeForUser(@PathVariable String username, @PathVariable long id, Pageable pageable,
-//                                              @RequestParam(name = "direction", defaultValue = "after") String direction,
-//                                              @RequestParam(name = "count", defaultValue = "false", required = false) boolean count) {
-//        if (!direction.equalsIgnoreCase("after")) {
-//            return ResponseEntity.ok(mindService.getOldMindsForUser(username, id, pageable).map(MindVM::new));
-//        }
-//        if(count){
-//            long newMindsCountOfUser = mindService.getNewMindsCountOfUser(id, username);
-//            return ResponseEntity.ok(Collections.singletonMap("count", newMindsCountOfUser));
-//        }
-//        List<MindVM> newMinds = mindService.getNewMindsOfUser(username, id, pageable).stream()
-//                .map(MindVM::new)
-//                .collect(Collectors.toList());
-//        return ResponseEntity.ok(newMinds);
-//    }
+    @DeleteMapping("/minds/{id:[0-9]+}")
+    GenericResponse deleteMind(@PathVariable long id){
+        mindService.deleteMind(id);
+        return new GenericResponse("Mind is removed");
+    }
 }
