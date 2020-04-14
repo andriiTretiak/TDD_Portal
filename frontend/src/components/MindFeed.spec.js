@@ -3,11 +3,23 @@ import {fireEvent, render, waitForDomChange, waitForElement} from "@testing-libr
 import MindFeed from './MindFeed';
 import * as apiCalls from '../api/apiCalls';
 import {MemoryRouter} from "react-router-dom";
+import {Provider} from 'react-redux';
+import {createStore} from 'redux';
+import authReducer from '../redux/authReducer';
 
 const originalSetInterval = window.setInterval;
 const originalClearInterval = window.clearInterval;
 
 let timedFunction;
+
+const loggedInStateUser1 = {
+    id: 1,
+    username: 'user1',
+    displayName: 'display1',
+    image: 'image1',
+    password: 'P4ssword',
+    isLoggedIn: true,
+};
 
 const useFakeIntervals = () => {
     window.setInterval = (callback, interval) => {
@@ -27,11 +39,14 @@ const runTimer = () => {
     timedFunction && timedFunction();
 };
 
-const setup = (props) => {
+const setup = (props, state = loggedInStateUser1) => {
+    const store = createStore(authReducer, state);
     return render(
-        <MemoryRouter>
-            <MindFeed {...props}/>
-        </MemoryRouter>
+        <Provider store={store}>
+            <MemoryRouter>
+                <MindFeed {...props}/>
+            </MemoryRouter>
+        </Provider>
     );
 };
 
@@ -326,7 +341,7 @@ describe('MindFeed', () => {
         it('calls loadNewMinds with mind id when clicking New Minds Count card', async () => {
             useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
-            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
             apiCalls.loadNewMinds = jest.fn().mockResolvedValue(mockSuccessGetNewMindsList);
             const {queryByText} = setup();
             await waitForDomChange();
@@ -340,7 +355,7 @@ describe('MindFeed', () => {
         it('calls loadNewMinds with mind id and username when clicking New Minds Count Card when rendered with user property', async () => {
             useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
-            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
             apiCalls.loadNewMinds = jest.fn().mockResolvedValue(mockSuccessGetNewMindsList);
             const {queryByText} = setup({user: 'user1'});
 
@@ -354,7 +369,7 @@ describe('MindFeed', () => {
         it('displays loaded new minds when loadNewMinds api call success', async () => {
             useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
-            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
             apiCalls.loadNewMinds = jest.fn().mockResolvedValue(mockSuccessGetNewMindsList);
             const {queryByText} = setup({user: 'user1'});
 
@@ -369,7 +384,7 @@ describe('MindFeed', () => {
         it('hides new minds count when loadNewMinds api call success', async () => {
             useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
-            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
             apiCalls.loadNewMinds = jest.fn().mockResolvedValue(mockSuccessGetNewMindsList);
             const {queryByText} = setup({user: 'user1'});
 
@@ -443,7 +458,7 @@ describe('MindFeed', () => {
         it('does not allow loadNewMinds when there is an active api call about it', async () => {
             useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
-            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
             apiCalls.loadNewMinds = jest.fn().mockResolvedValue(mockSuccessGetNewMindsList);
             const {queryByText} = setup({user: 'user1'});
 
@@ -458,7 +473,7 @@ describe('MindFeed', () => {
         it('replace There is 1 mind with spinner when there is an active api call about it', async () => {
             useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
-            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
             apiCalls.loadNewMinds = jest.fn().mockImplementation(() => {
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
@@ -479,7 +494,7 @@ describe('MindFeed', () => {
         it('replace spinner and There is 1 mind when after api call for loadNewMinds finishes with success', async () => {
             useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
-            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
             apiCalls.loadNewMinds = jest.fn().mockImplementation(() => {
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {
@@ -500,7 +515,7 @@ describe('MindFeed', () => {
         it('replace spinner with There is 1 mind when after api call for loadNewMinds finishes error', async () => {
             useFakeIntervals();
             apiCalls.loadMinds = jest.fn().mockResolvedValue(mockSuccessGetMindsFirstOfMultiPage);
-            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count:1}});
+            apiCalls.loadNewMindsCount = jest.fn().mockResolvedValue({data: {count: 1}});
             apiCalls.loadNewMinds = jest.fn().mockImplementation(() => {
                 return new Promise((resolve, reject) => {
                     setTimeout(() => {

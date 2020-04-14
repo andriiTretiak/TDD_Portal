@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import ProfileImageWithDefault from "./ProfileImageWithDefault";
 import {format} from "timeago.js";
 import {Link} from "react-router-dom";
+import {connect} from "react-redux";
 
 class MindView extends Component {
     render() {
@@ -10,6 +11,7 @@ class MindView extends Component {
         const {username, displayName, image} = user;
         const relativeDate = format(date);
         const attachmentImageVisible = mind.attachment && mind.attachment.fileType.startsWith("image");
+        const ownedByLoggedInUser = user.id === this.props.loggedInUser.id;
         return (
             <div className="card p-1">
                 <div className="d-flex">
@@ -26,6 +28,9 @@ class MindView extends Component {
                         <span className="text-black-50"> - </span>
                         <span className="text-black-50">{relativeDate}</span>
                     </div>
+                    {ownedByLoggedInUser && <button className="btn btn-outline-danger btn-sm">
+                        <i className="far fa-trash-alt" />
+                    </button>}
                 </div>
                 <div className="pl-5">
                     {mind.content}
@@ -42,4 +47,10 @@ class MindView extends Component {
     }
 }
 
-export default MindView;
+const mapStateToProps = state => {
+    return {
+        loggedInUser: state
+    }
+};
+
+export default connect(mapStateToProps)(MindView);
